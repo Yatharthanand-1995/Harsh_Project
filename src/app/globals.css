@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Homespun Brand Colors */
+    --sienna: 27 42% 33%;
+    --saffron: 30 100% 60%;
+    --cream: 48 100% 93%;
+    --deep-red: 0 70% 42%;
+    --dark: 25 23% 20%;
+    --warm-beige: 39 100% 83%;
+
+    /* shadcn/ui Design System */
+    --background: 0 0% 100%;
+    --foreground: 25 23% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 25 23% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 23% 20%;
+
+    --primary: 27 42% 33%;
+    --primary-foreground: 48 100% 93%;
+
+    --secondary: 39 100% 83%;
+    --secondary-foreground: 27 42% 33%;
+
+    --muted: 39 50% 93%;
+    --muted-foreground: 25 23% 45%;
+
+    --accent: 30 100% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 42%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 39 30% 85%;
+    --input: 39 30% 85%;
+    --ring: 27 42% 33%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 25 23% 10%;
+    --foreground: 48 100% 93%;
+
+    --card: 25 23% 10%;
+    --card-foreground: 48 100% 93%;
+
+    --popover: 25 23% 10%;
+    --popover-foreground: 48 100% 93%;
+
+    --primary: 27 42% 33%;
+    --primary-foreground: 48 100% 93%;
+
+    --secondary: 39 50% 20%;
+    --secondary-foreground: 48 100% 93%;
+
+    --muted: 39 30% 18%;
+    --muted-foreground: 48 80% 80%;
+
+    --accent: 30 100% 60%;
+    --accent-foreground: 25 23% 10%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 48 100% 93%;
+
+    --border: 39 30% 25%;
+    --input: 39 30% 25%;
+    --ring: 27 42% 40%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-source-sans), sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  .font-serif {
+    font-family: var(--font-merriweather), serif;
+  }
+
+  .font-sans {
+    font-family: var(--font-source-sans), sans-serif;
+  }
 }
