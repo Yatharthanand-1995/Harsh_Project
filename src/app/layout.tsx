@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Merriweather, Source_Sans_3 } from 'next/font/google'
+import { AuthProvider } from '@/components/providers/session-provider'
 import './globals.css'
 
 const merriweather = Merriweather({
@@ -55,7 +56,7 @@ export default function RootLayout({
       <body
         className={`${merriweather.variable} ${sourceSans.variable} font-sans antialiased`}
       >
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )

@@ -4,14 +4,48 @@ import { Pool } from 'pg'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
+  pool: Pool | undefined
+}
+
+// For Prisma Postgres URLs, extract the actual database URL from the API key
+function getDatabaseUrl() {
+  const url = process.env.DATABASE_URL
+  if (!url) {
+    console.error('DATABASE_URL is not set')
+    throw new Error('DATABASE_URL is not set')
+  }
+
+  // If it's a Prisma Postgres URL, we need to decode the API key
+  if (url.startsWith('prisma+postgres://')) {
+    try {
+      const apiKeyMatch = url.match(/api_key=([^&]+)/)
+      if (apiKeyMatch) {
+        const apiKey = apiKeyMatch[1]
+        const decoded = JSON.parse(Buffer.from(apiKey, 'base64').toString())
+        console.log('Using decoded Prisma Postgres URL')
+        return decoded.databaseUrl
+      }
+    } catch (e) {
+      console.error('Failed to parse Prisma Postgres URL:', e)
+      // Fall back to the original URL
+      return url
+    }
+  }
+
+  console.log('Using standard DATABASE_URL')
+  return url
 }
 
 // Create connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-})
+if (!globalForPrisma.pool) {
+  const dbUrl = getDatabaseUrl()
+  console.log('Creating Prisma connection pool')
+  globalForPrisma.pool = new Pool({
+    connectionString: dbUrl,
+  })
+}
 
-const adapter = new PrismaPg(pool)
+const adapter = new PrismaPg(globalForPrisma.pool)
 
 export const prisma =
   globalForPrisma.prisma ??

@@ -1,9 +1,9 @@
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { ProductActions } from '@/components/product/product-actions'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { Minus, Plus, ShoppingCart, Heart, Share2 } from 'lucide-react'
 import { getProductBySlug } from '@/data/products'
 
 interface ProductPageProps {
@@ -156,41 +156,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </span>
               </div>
 
-              {/* Quantity Selector */}
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-gray-700">
-                  Quantity
-                </label>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center rounded-full border-2 border-gray-300">
-                    <button className="p-3 text-gray-600 transition-colors hover:bg-gray-100">
-                      <Minus className="h-5 w-5" />
-                    </button>
-                    <span className="min-w-[3rem] text-center font-bold">1</span>
-                    <button className="p-3 text-gray-600 transition-colors hover:bg-gray-100">
-                      <Plus className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                <button className="flex w-full items-center justify-center gap-2 rounded-full bg-[hsl(var(--saffron))] py-4 font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl">
-                  <ShoppingCart className="h-5 w-5" />
-                  Add to Cart
-                </button>
-                <div className="grid grid-cols-2 gap-3">
-                  <button className="flex items-center justify-center gap-2 rounded-full border-2 border-[hsl(var(--sienna))] bg-white py-3 font-semibold text-[hsl(var(--sienna))] transition-all hover:bg-[hsl(var(--sienna))] hover:text-white">
-                    <Heart className="h-5 w-5" />
-                    Wishlist
-                  </button>
-                  <button className="flex items-center justify-center gap-2 rounded-full border-2 border-[hsl(var(--sienna))] bg-white py-3 font-semibold text-[hsl(var(--sienna))] transition-all hover:bg-[hsl(var(--sienna))] hover:text-white">
-                    <Share2 className="h-5 w-5" />
-                    Share
-                  </button>
-                </div>
-              </div>
+              {/* Product Actions (Quantity Selector & Buttons) */}
+              <ProductActions
+                productId={product.id}
+                productName={product.name}
+                price={product.price}
+                stock={product.stock}
+              />
 
               {/* Delivery Info */}
               <div className="rounded-2xl bg-blue-50 p-6">

@@ -1,11 +1,21 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingCart, User, Menu } from 'lucide-react'
-import { useState } from 'react'
+import { ShoppingCart, User, Menu, LogOut } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useSession, signOut } from 'next-auth/react'
+import { useCartStore } from '@/lib/stores/cart-store'
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { data: session, status } = useSession()
+  const { itemCount, fetchCart } = useCartStore()
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchCart()
+    }
+  }, [status, fetchCart])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-[hsl(var(--sienna))] to-[#A0522D] shadow-lg">
@@ -70,18 +80,40 @@ export function Header() {
             aria-label="Shopping Cart"
           >
             <ShoppingCart className="h-6 w-6" />
-            <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(var(--saffron))] text-xs font-bold text-white">
-              0
-            </span>
+            {itemCount > 0 && (
+              <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(var(--saffron))] text-xs font-bold text-white">
+                {itemCount > 9 ? '9+' : itemCount}
+              </span>
+            )}
           </Link>
 
-          <Link
-            href="/account"
-            className="text-[hsl(var(--cream))] transition-colors hover:text-[hsl(var(--saffron))]"
-            aria-label="User Account"
-          >
-            <User className="h-6 w-6" />
-          </Link>
+          {status === 'authenticated' ? (
+            <div className="flex items-center gap-3">
+              <Link
+                href="/account"
+                className="hidden text-[hsl(var(--cream))] transition-colors hover:text-[hsl(var(--saffron))] md:block"
+                aria-label="User Account"
+              >
+                <User className="h-6 w-6" />
+              </Link>
+              <button
+                onClick={() => signOut()}
+                className="flex items-center gap-2 text-[hsl(var(--cream))] transition-colors hover:text-[hsl(var(--saffron))]"
+                aria-label="Sign Out"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="hidden text-sm md:inline">Sign Out</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-2 rounded-full bg-[hsl(var(--cream))] px-4 py-2 text-sm font-bold text-[hsl(var(--sienna))] transition-all hover:bg-white"
+            >
+              <User className="h-4 w-4" />
+              Sign In
+            </Link>
+          )}
 
           <Link
             href="/products"

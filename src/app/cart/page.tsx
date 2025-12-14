@@ -3,66 +3,74 @@
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
-import { useState } from 'react'
-
-// Mock cart data (will be replaced with API calls)
-const INITIAL_CART_ITEMS = [
-  {
-    id: '1',
-    productId: '1',
-    name: 'Artisan Sourdough Bread',
-    price: 299,
-    quantity: 2,
-    thumbnail: '🥖',
-    slug: 'artisan-sourdough-bread',
-  },
-  {
-    id: '2',
-    productId: '2',
-    name: 'Chocolate Celebration Cake',
-    price: 899,
-    quantity: 1,
-    thumbnail: '🎂',
-    slug: 'chocolate-celebration-cake',
-  },
-  {
-    id: '3',
-    productId: '4',
-    name: 'Gourmet Cookie Box',
-    price: 599,
-    quantity: 3,
-    thumbnail: '🍪',
-    slug: 'gourmet-cookie-box',
-  },
-]
+import { useEffect } from 'react'
+import { useCartStore } from '@/lib/stores/cart-store'
+import { useSession } from 'next-auth/react'
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState(INITIAL_CART_ITEMS)
+  const { data: session, status } = useSession()
+  const { items, subtotal, itemCount, isLoading, error, fetchCart, updateQuantity, removeItem, clearError } =
+    useCartStore()
 
-  const updateQuantity = (id: string, change: number) => {
-    setCartItems((items) =>
-      items.map((item) => {
-        if (item.id === id) {
-          const newQuantity = Math.max(1, Math.min(99, item.quantity + change))
-          return { ...item, quantity: newQuantity }
-        }
-        return item
-      })
-    )
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchCart()
+    }
+  }, [status, fetchCart])
+
+  const handleUpdateQuantity = async (itemId: string, currentQuantity: number, change: number) => {
+    const newQuantity = currentQuantity + change
+    if (newQuantity < 1) return
+
+    try {
+      await updateQuantity(itemId, newQuantity)
+    } catch (error) {
+      console.error('Failed to update quantity:', error)
+    }
   }
 
-  const removeItem = (id: string) => {
-    setCartItems((items) => items.filter((item) => item.id !== id))
+  const handleRemoveItem = async (itemId: string) => {
+    try {
+      await removeItem(itemId)
+    } catch (error) {
+      console.error('Failed to remove item:', error)
+    }
   }
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  )
   const deliveryFee = subtotal > 500 ? 0 : 50
   const tax = Math.round(subtotal * 0.05) // 5% GST
   const total = subtotal + deliveryFee + tax
+
+  // Show login prompt if not authenticated
+  if (status === 'unauthenticated') {
+    return (
+      <>
+        <Header />
+        <main className="min-h-screen bg-gray-50">
+          <div className="container mx-auto px-4 py-12">
+            <div className="rounded-3xl bg-white p-16 text-center shadow-lg">
+              <div className="mb-6 text-8xl">🔒</div>
+              <h2 className="mb-4 font-serif text-3xl font-bold text-gray-800">
+                Sign in to view your cart
+              </h2>
+              <p className="mb-8 text-lg text-gray-600">
+                Please sign in to see your cart items and checkout
+              </p>
+              <Link
+                href="/login?callbackUrl=/cart"
+                className="inline-flex items-center gap-2 rounded-full bg-[hsl(var(--saffron))] px-8 py-4 font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+              >
+                Sign In
+              </Link>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    )
+  }
 
   return (
     <>
@@ -75,11 +83,34 @@ export default function CartPage() {
               Shopping Cart
             </h1>
             <p className="text-gray-600">
-              {cartItems.length} item{cartItems.length !== 1 && 's'} in your cart
+              {isLoading ? 'Loading...' : `${itemCount} item${itemCount !== 1 ? 's' : ''} in your cart`}
             </p>
           </div>
 
-          {cartItems.length === 0 ? (
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 rounded-lg bg-red-50 p-4 text-red-600">
+              <div className="flex items-center justify-between">
+                <span>{error}</span>
+                <button
+                  onClick={clearError}
+                  className="text-sm font-semibold underline"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          )}
+
+          {isLoading && items.length === 0 ? (
+            /* Loading State */
+            <div className="rounded-3xl bg-white p-16 text-center shadow-lg">
+              <div className="mb-6 text-6xl">⏳</div>
+              <h2 className="font-serif text-2xl font-bold text-gray-800">
+                Loading your cart...
+              </h2>
+            </div>
+          ) : items.length === 0 ? (
             /* Empty Cart State */
             <div className="rounded-3xl bg-white p-16 text-center shadow-lg">
               <div className="mb-6 text-8xl">🛒</div>
@@ -102,7 +133,7 @@ export default function CartPage() {
               {/* Cart Items */}
               <div className="lg:col-span-2">
                 <div className="space-y-4">
-                  {cartItems.map((item) => (
+                  {items.map((item) => (
                     <div
                       key={item.id}
                       className="overflow-hidden rounded-2xl bg-white p-6 shadow-md transition-all hover:shadow-lg"
@@ -110,23 +141,34 @@ export default function CartPage() {
                       <div className="flex gap-6">
                         {/* Product Image */}
                         <Link
-                          href={`/products/${item.slug}`}
-                          className="flex h-32 w-32 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))] text-6xl transition-transform hover:scale-105"
+                          href={`/products/${item.product.slug}`}
+                          className="relative h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))] transition-transform hover:scale-105"
                         >
-                          {item.thumbnail}
+                          <Image
+                            src={item.product.thumbnail}
+                            alt={item.product.name}
+                            fill
+                            className="object-cover"
+                            sizes="128px"
+                          />
                         </Link>
 
                         {/* Product Info */}
                         <div className="flex flex-1 flex-col justify-between">
                           <div>
                             <Link
-                              href={`/products/${item.slug}`}
+                              href={`/products/${item.product.slug}`}
                               className="mb-2 block font-serif text-xl font-bold text-[hsl(var(--sienna))] hover:text-[hsl(var(--saffron))]"
                             >
-                              {item.name}
+                              {item.product.name}
                             </Link>
+                            {item.product.shortDesc && (
+                              <p className="mb-2 text-sm text-gray-600">
+                                {item.product.shortDesc}
+                              </p>
+                            )}
                             <p className="mb-4 font-serif text-2xl font-bold text-gray-800">
-                              ₹{item.price}
+                              ₹{item.product.price}
                             </p>
                           </div>
 
@@ -135,9 +177,11 @@ export default function CartPage() {
                             <div className="flex items-center gap-3">
                               <div className="flex items-center rounded-full border-2 border-gray-300">
                                 <button
-                                  onClick={() => updateQuantity(item.id, -1)}
-                                  className="p-2 text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-50"
-                                  disabled={item.quantity <= 1}
+                                  onClick={() =>
+                                    handleUpdateQuantity(item.id, item.quantity, -1)
+                                  }
+                                  className="p-2 text-gray-600 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                  disabled={item.quantity <= 1 || isLoading}
                                   aria-label="Decrease quantity"
                                 >
                                   <Minus className="h-4 w-4" />
@@ -146,9 +190,13 @@ export default function CartPage() {
                                   {item.quantity}
                                 </span>
                                 <button
-                                  onClick={() => updateQuantity(item.id, 1)}
-                                  className="p-2 text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-50"
-                                  disabled={item.quantity >= 99}
+                                  onClick={() =>
+                                    handleUpdateQuantity(item.id, item.quantity, 1)
+                                  }
+                                  className="p-2 text-gray-600 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                  disabled={
+                                    item.quantity >= item.product.stock || isLoading
+                                  }
                                   aria-label="Increase quantity"
                                 >
                                   <Plus className="h-4 w-4" />
@@ -156,8 +204,9 @@ export default function CartPage() {
                               </div>
 
                               <button
-                                onClick={() => removeItem(item.id)}
-                                className="flex items-center gap-2 rounded-full px-4 py-2 text-red-600 transition-colors hover:bg-red-50"
+                                onClick={() => handleRemoveItem(item.id)}
+                                className="flex items-center gap-2 rounded-full px-4 py-2 text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                disabled={isLoading}
                                 aria-label="Remove from cart"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -168,7 +217,7 @@ export default function CartPage() {
                             <div className="text-right">
                               <p className="text-sm text-gray-500">Subtotal</p>
                               <p className="font-serif text-2xl font-bold text-[hsl(var(--sienna))]">
-                                ₹{item.price * item.quantity}
+                                ₹{item.product.price * item.quantity}
                               </p>
                             </div>
                           </div>
@@ -200,7 +249,7 @@ export default function CartPage() {
                     <div className="space-y-4">
                       {/* Subtotal */}
                       <div className="flex justify-between text-gray-700">
-                        <span>Subtotal ({cartItems.length} items)</span>
+                        <span>Subtotal ({itemCount} items)</span>
                         <span className="font-semibold">₹{subtotal}</span>
                       </div>
 
