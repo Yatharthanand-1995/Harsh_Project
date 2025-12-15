@@ -70,6 +70,11 @@ async function main() {
   let productCount = 0
 
   for (const product of PRODUCTS) {
+    const categoryId = categoryMap[product.category]
+    if (!categoryId) {
+      throw new Error(`Category "${product.category}" not found for product "${product.name}"`)
+    }
+
     await prisma.product.upsert({
       where: { slug: product.slug },
       update: {},
@@ -79,15 +84,15 @@ async function main() {
         description: product.description,
         shortDesc: product.shortDesc,
         price: product.price,
-        comparePrice: product.comparePrice,
-        categoryId: categoryMap[product.category],
+        comparePrice: product.comparePrice ?? null,
+        categoryId,
         thumbnail: product.thumbnail,
         images: product.images,
         stock: product.stock,
-        ingredients: product.ingredients,
-        allergens: product.allergens,
-        tags: product.tags,
-        isFeatured: product.isFeatured,
+        ingredients: product.ingredients ?? null,
+        allergens: product.allergens ?? null,
+        tags: product.tags ?? [],
+        isFeatured: product.isFeatured ?? false,
         isActive: true,
       },
     })

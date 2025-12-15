@@ -157,9 +157,9 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         productId,
         quantity,
-        variantId,
-        variantName,
-        customization,
+        variantId: variantId ?? null,
+        variantName: variantName ?? null,
+        customization: customization ?? null,
       },
       include: {
         product: {
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
+        { error: 'Invalid request data', details: error.issues },
         { status: 400 }
       )
     }

@@ -19,7 +19,7 @@ function getDatabaseUrl() {
   if (url.startsWith('prisma+postgres://')) {
     try {
       const apiKeyMatch = url.match(/api_key=([^&]+)/)
-      if (apiKeyMatch) {
+      if (apiKeyMatch && apiKeyMatch[1]) {
         const apiKey = apiKeyMatch[1]
         const decoded = JSON.parse(Buffer.from(apiKey, 'base64').toString())
         console.log('Using decoded Prisma Postgres URL')
