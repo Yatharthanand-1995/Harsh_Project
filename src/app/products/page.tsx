@@ -3,25 +3,43 @@ import { Footer } from '@/components/layout/footer'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Suspense } from 'react'
-import { PRODUCTS } from '@/data/products'
+import {
+  PRODUCTS,
+  getAvailableFestivals,
+  FESTIVAL_NAMES,
+  FestivalType,
+  getAvailableBakeryTypes,
+  BAKERY_TYPE_NAMES,
+  BakeryType,
+} from '@/data/products'
 
 interface ProductsPageProps {
   searchParams: Promise<{
     category?: string
     search?: string
     featured?: string
+    festival?: string
+    bakeryType?: string
   }>
 }
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const params = await searchParams
-  const { category, search, featured } = params
+  const { category, search, featured, festival, bakeryType } = params
 
   // Filter products based on search params
   let filteredProducts = PRODUCTS
 
   if (category) {
     filteredProducts = filteredProducts.filter((p) => p.category === category)
+  }
+
+  if (festival) {
+    filteredProducts = filteredProducts.filter((p) => p.festivalType === festival)
+  }
+
+  if (bakeryType) {
+    filteredProducts = filteredProducts.filter((p) => p.bakeryType === bakeryType)
   }
 
   if (featured === 'true') {
@@ -34,11 +52,26 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     )
   }
 
+  // Get available festivals and bakery types for the filters
+  const availableFestivals = getAvailableFestivals()
+  const availableBakeryTypes = getAvailableBakeryTypes()
+
   const categoryTitle = {
     bakery: 'Artisan Bakery',
     festivals: 'Festival Gifts',
     corporate: 'Corporate Gifting',
     cakes: 'Celebration Cakes',
+    frozen: 'Frozen & Ready to Consume',
+  }
+
+  // Determine page title
+  let pageTitle = 'All Products'
+  if (bakeryType) {
+    pageTitle = `${BAKERY_TYPE_NAMES[bakeryType as BakeryType]}`
+  } else if (festival) {
+    pageTitle = `${FESTIVAL_NAMES[festival as FestivalType]} Gifts`
+  } else if (category) {
+    pageTitle = categoryTitle[category as keyof typeof categoryTitle]
   }
 
   return (
@@ -49,7 +82,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           {/* Page Header */}
           <div className="mb-12 text-center">
             <h1 className="mb-4 font-serif text-5xl font-bold text-[hsl(var(--sienna))]">
-              {category ? categoryTitle[category as keyof typeof categoryTitle] : 'All Products'}
+              {pageTitle}
             </h1>
             <p className="text-lg text-gray-600">
               Handcrafted with love, delivered with care
@@ -99,12 +132,100 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               >
                 Festivals ({PRODUCTS.filter(p => p.category === 'festivals').length})
               </Link>
+              <Link
+                href="/products?category=frozen"
+                className={`rounded-full px-6 py-2 font-semibold transition-colors ${
+                  category === 'frozen'
+                    ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))]'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Frozen ({PRODUCTS.filter(p => p.category === 'frozen').length})
+              </Link>
             </div>
 
             <p className="text-gray-600">
               {filteredProducts.length} product{filteredProducts.length !== 1 && 's'}
             </p>
           </div>
+
+          {/* Bakery Sub-Filters */}
+          {(category === 'bakery' || bakeryType) && availableBakeryTypes.length > 0 && (
+            <div className="mb-8">
+              <h2 className="mb-4 font-serif text-2xl font-bold text-[hsl(var(--sienna))]">
+                Browse by Type
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/products?category=bakery"
+                  className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                    category === 'bakery' && !bakeryType
+                      ? 'bg-[hsl(var(--saffron))] text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  All Bakery
+                </Link>
+                {availableBakeryTypes.map((type) => {
+                  const typeProductCount = PRODUCTS.filter(
+                    (p) => p.bakeryType === type
+                  ).length
+                  return (
+                    <Link
+                      key={type}
+                      href={`/products?category=bakery&bakeryType=${type}`}
+                      className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                        bakeryType === type
+                          ? 'bg-[hsl(var(--saffron))] text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {BAKERY_TYPE_NAMES[type]} ({typeProductCount})
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Festival Sub-Filters */}
+          {(category === 'festivals' || festival) && availableFestivals.length > 0 && (
+            <div className="mb-8">
+              <h2 className="mb-4 font-serif text-2xl font-bold text-[hsl(var(--sienna))]">
+                Browse by Festival
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/products?category=festivals"
+                  className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                    category === 'festivals' && !festival
+                      ? 'bg-[hsl(var(--saffron))] text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  All Festivals
+                </Link>
+                {availableFestivals.map((festivalType) => {
+                  const festivalProductCount = PRODUCTS.filter(
+                    (p) => p.festivalType === festivalType
+                  ).length
+                  return (
+                    <Link
+                      key={festivalType}
+                      href={`/products?category=festivals&festival=${festivalType}`}
+                      className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                        festival === festivalType
+                          ? 'bg-[hsl(var(--saffron))] text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {FESTIVAL_NAMES[festivalType]} ({festivalProductCount})
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Products Grid */}
           <Suspense fallback={<ProductGridSkeleton />}>

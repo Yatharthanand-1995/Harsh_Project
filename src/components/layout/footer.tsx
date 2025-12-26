@@ -36,14 +36,14 @@ export function Footer() {
                   Festival Gifts
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   href="/corporate"
                   className="transition-colors hover:pl-1 hover:text-[hsl(var(--saffron))]"
                 >
                   Corporate Gifting
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link
                   href="/products?featured=true"

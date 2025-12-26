@@ -54,14 +54,14 @@ export function Header() {
               Festivals
             </Link>
           </li>
-          <li>
+          {/* <li>
             <Link
               href="/corporate"
               className="relative text-base font-semibold text-[hsl(var(--cream))] transition-colors after:absolute after:bottom-[-5px] after:left-0 after:h-0.5 after:w-0 after:bg-[hsl(var(--saffron))] after:transition-all hover:after:w-full"
             >
               Corporate
             </Link>
-          </li>
+          </li> */}
           <li>
             <Link
               href="/about"
@@ -164,7 +164,7 @@ export function Header() {
                 Festivals
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link
                 href="/corporate"
                 className="block py-2 text-base font-semibold text-[hsl(var(--cream))]"
@@ -172,7 +172,7 @@ export function Header() {
               >
                 Corporate
               </Link>
-            </li>
+            </li> */}
             <li>
               <Link
                 href="/about"
