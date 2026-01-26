@@ -78,75 +78,132 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     <>
       <Header />
       <main className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-12">
-          {/* Page Header */}
-          <div className="mb-12 text-center">
-            <h1 className="mb-4 font-serif text-5xl font-bold text-[hsl(var(--sienna))]">
-              {pageTitle}
-            </h1>
-            <p className="text-lg text-gray-600">
-              Handcrafted with love, delivered with care
-            </p>
-          </div>
-
-          {/* Filters */}
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/products"
-                className={`rounded-full px-6 py-2 font-semibold transition-colors ${
-                  !category
-                    ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))]'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                All ({PRODUCTS.length})
-              </Link>
-              <Link
-                href="/products?category=bakery"
-                className={`rounded-full px-6 py-2 font-semibold transition-colors ${
-                  category === 'bakery'
-                    ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))]'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Bakery ({PRODUCTS.filter(p => p.category === 'bakery').length})
-              </Link>
-              <Link
-                href="/products?category=cakes"
-                className={`rounded-full px-6 py-2 font-semibold transition-colors ${
-                  category === 'cakes'
-                    ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))]'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Cakes ({PRODUCTS.filter(p => p.category === 'cakes').length})
-              </Link>
-              <Link
-                href="/products?category=festivals"
-                className={`rounded-full px-6 py-2 font-semibold transition-colors ${
-                  category === 'festivals'
-                    ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))]'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Festivals ({PRODUCTS.filter(p => p.category === 'festivals').length})
-              </Link>
-              <Link
-                href="/products?category=frozen"
-                className={`rounded-full px-6 py-2 font-semibold transition-colors ${
-                  category === 'frozen'
-                    ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))]'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Frozen ({PRODUCTS.filter(p => p.category === 'frozen').length})
-              </Link>
+        {/* Bakery Category Hero */}
+        {category === 'bakery' && (
+          <section className="relative h-96 overflow-hidden mb-12">
+            <div className="absolute inset-0">
+              <Image
+                src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1920&q=80"
+                fill
+                className="object-cover brightness-75"
+                alt="Fresh baked goods"
+                sizes="100vw"
+                priority
+              />
             </div>
+            <div className="relative z-10 container mx-auto h-full flex items-center px-4">
+              <div className="max-w-2xl text-white">
+                <h1 className="font-serif text-6xl lg:text-7xl font-black mb-4 drop-shadow-2xl">
+                  Artisan Bakery
+                </h1>
+                <p className="text-xl leading-relaxed drop-shadow-md">
+                  Fresh-baked daily with love and traditional techniques
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
 
-            <p className="text-gray-600">
-              {filteredProducts.length} product{filteredProducts.length !== 1 && 's'}
-            </p>
+        {/* Festivals Category Hero */}
+        {category === 'festivals' && (
+          <section className="relative h-96 overflow-hidden mb-12">
+            <div className="absolute inset-0">
+              <Image
+                src="https://images.unsplash.com/photo-1605811345115-f4c2d8dea51a?w=1920&q=80"
+                fill
+                className="object-cover"
+                alt="Festival celebrations"
+                sizes="100vw"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--deep-red))]/90 to-[hsl(var(--saffron))]/80" />
+            </div>
+            <div className="relative z-10 container mx-auto h-full flex items-center px-4">
+              <div className="max-w-2xl text-white">
+                <h1 className="font-serif text-6xl lg:text-7xl font-black mb-4 drop-shadow-2xl">
+                  Festival Collections
+                </h1>
+                <p className="text-xl leading-relaxed drop-shadow-md">
+                  Celebrate India&apos;s rich traditions with curated gift hampers
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <div className="container mx-auto px-4 py-12">
+          {/* Page Header - Only show for non-hero categories */}
+          {category !== 'bakery' && category !== 'festivals' && (
+            <div className="mb-12 text-center">
+              <h1 className="mb-4 font-serif text-5xl font-bold text-[hsl(var(--sienna))]">
+                {pageTitle}
+              </h1>
+              <p className="text-lg text-gray-600">
+                Handcrafted with love, delivered with care
+              </p>
+            </div>
+          )}
+
+          {/* Filters - Enhanced with gradient background */}
+          <div className="bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))] -mx-4 px-4 sm:mx-0 sm:rounded-3xl py-8 mb-8">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/products"
+                  className={`rounded-full px-6 py-3 font-bold transition-all ${
+                    !category
+                      ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
+                      : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
+                  }`}
+                >
+                  All ({PRODUCTS.length})
+                </Link>
+                <Link
+                  href="/products?category=bakery"
+                  className={`rounded-full px-6 py-3 font-bold transition-all ${
+                    category === 'bakery'
+                      ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
+                      : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
+                  }`}
+                >
+                  🥖 Bakery ({PRODUCTS.filter(p => p.category === 'bakery').length})
+                </Link>
+                <Link
+                  href="/products?category=cakes"
+                  className={`rounded-full px-6 py-3 font-bold transition-all ${
+                    category === 'cakes'
+                      ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
+                      : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
+                  }`}
+                >
+                  🎂 Cakes ({PRODUCTS.filter(p => p.category === 'cakes').length})
+                </Link>
+                <Link
+                  href="/products?category=festivals"
+                  className={`rounded-full px-6 py-3 font-bold transition-all ${
+                    category === 'festivals'
+                      ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
+                      : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
+                  }`}
+                >
+                  🪔 Festivals ({PRODUCTS.filter(p => p.category === 'festivals').length})
+                </Link>
+                <Link
+                  href="/products?category=frozen"
+                  className={`rounded-full px-6 py-3 font-bold transition-all ${
+                    category === 'frozen'
+                      ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
+                      : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
+                  }`}
+                >
+                  🧊 Frozen ({PRODUCTS.filter(p => p.category === 'frozen').length})
+                </Link>
+              </div>
+
+              <p className="text-gray-600 font-medium">
+                {filteredProducts.length} product{filteredProducts.length !== 1 && 's'}
+              </p>
+            </div>
           </div>
 
           {/* Bakery Sub-Filters */}
@@ -158,10 +215,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               <div className="flex flex-wrap gap-2">
                 <Link
                   href="/products?category=bakery"
-                  className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                  className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
                     category === 'bakery' && !bakeryType
-                      ? 'bg-[hsl(var(--saffron))] text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                      ? 'bg-[hsl(var(--saffron))] text-white shadow-md scale-105'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                   }`}
                 >
                   All Bakery
@@ -174,10 +231,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     <Link
                       key={type}
                       href={`/products?category=bakery&bakeryType=${type}`}
-                      className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                      className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
                         bakeryType === type
-                          ? 'bg-[hsl(var(--saffron))] text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-100'
+                          ? 'bg-[hsl(var(--saffron))] text-white shadow-md scale-105'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                       }`}
                     >
                       {BAKERY_TYPE_NAMES[type]} ({typeProductCount})
@@ -197,10 +254,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               <div className="flex flex-wrap gap-2">
                 <Link
                   href="/products?category=festivals"
-                  className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                  className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
                     category === 'festivals' && !festival
-                      ? 'bg-[hsl(var(--saffron))] text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                      ? 'bg-[hsl(var(--saffron))] text-white shadow-md scale-105'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                   }`}
                 >
                   All Festivals
@@ -213,10 +270,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     <Link
                       key={festivalType}
                       href={`/products?category=festivals&festival=${festivalType}`}
-                      className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                      className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
                         festival === festivalType
-                          ? 'bg-[hsl(var(--saffron))] text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-100'
+                          ? 'bg-[hsl(var(--saffron))] text-white shadow-md scale-105'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                       }`}
                     >
                       {FESTIVAL_NAMES[festivalType]} ({festivalProductCount})
@@ -229,81 +286,220 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
           {/* Products Grid */}
           <Suspense fallback={<ProductGridSkeleton />}>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredProducts.map((product) => (
-                <Link
-                  key={product.id}
-                  href={`/products/${product.slug}`}
-                  className="group overflow-hidden rounded-2xl bg-white shadow-md transition-all hover:-translate-y-2 hover:shadow-xl"
-                >
-                  {/* Product Image */}
-                  <div className="relative h-64 w-full overflow-hidden bg-gray-100">
-                    <Image
-                      src={product.thumbnail}
-                      alt={product.name}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-110"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                    />
-                    {product.isFeatured && (
-                      <div className="absolute right-3 top-3 rounded-full bg-[hsl(var(--saffron))] px-3 py-1 text-xs font-bold text-white shadow-lg">
-                        Featured
-                      </div>
-                    )}
-                    {product.comparePrice && (
-                      <div className="absolute left-3 top-3 rounded-full bg-green-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                        Save ₹{product.comparePrice - product.price}
-                      </div>
-                    )}
-                  </div>
+            {/* Featured Products Bento (First 6 products) */}
+            {filteredProducts.length >= 6 && (() => {
+              const [p1, p2, p3, p4, p5, p6] = filteredProducts
+              if (!p1 || !p2 || !p3 || !p4 || !p5 || !p6) return null
 
-                  {/* Product Info */}
-                  <div className="p-6">
-                    <div className="mb-2 flex items-center gap-2">
-                      <span className="rounded-full bg-[hsl(var(--cream))] px-3 py-1 text-xs font-semibold text-[hsl(var(--sienna))] capitalize">
-                        {product.category}
-                      </span>
-                      {product.reviews && (
-                        <div className="flex items-center gap-1 text-xs text-gray-600">
-                          <span className="text-[hsl(var(--saffron))]">★</span>
-                          <span>{product.reviews.average}</span>
-                          <span>({product.reviews.count})</span>
+              return (
+                <div className="mb-16">
+                  <h2 className="text-4xl font-serif font-bold text-[hsl(var(--sienna))] mb-8">
+                    Featured {category === 'bakery' ? 'Baked Goods' : category === 'festivals' ? 'Festival Gifts' : 'Products'}
+                  </h2>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[250px]">
+                    {/* First product - Large (2x2) */}
+                    <Link
+                      href={`/products/${p1.slug}`}
+                      className="col-span-2 row-span-2 group relative overflow-hidden rounded-3xl"
+                    >
+                      <Image
+                        src={p1.thumbnail}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        alt={p1.name}
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                      <div className="absolute bottom-6 left-6 text-white">
+                        <h3 className="text-3xl font-serif font-bold mb-2">
+                          {p1.name}
+                        </h3>
+                        <p className="text-xl font-bold">₹{p1.price}</p>
+                      </div>
+                      {p1.isFeatured && (
+                        <div className="absolute top-4 right-4 bg-[hsl(var(--saffron))] text-white px-3 py-1 rounded-full text-xs font-bold">
+                          Featured
                         </div>
                       )}
-                    </div>
+                    </Link>
 
-                    <h3 className="mb-2 font-serif text-xl font-bold text-[hsl(var(--sienna))] group-hover:text-[hsl(var(--saffron))] line-clamp-2">
-                      {product.name}
-                    </h3>
-                    <p className="mb-4 text-sm text-gray-600 line-clamp-2">{product.shortDesc}</p>
-
-                    {/* Price */}
-                    <div className="flex items-center gap-2">
-                      <span className="font-serif text-2xl font-bold text-[hsl(var(--sienna))]">
-                        ₹{product.price}
-                      </span>
-                      {product.comparePrice && (
-                        <span className="text-sm text-gray-400 line-through">
-                          ₹{product.comparePrice}
-                        </span>
+                    {/* Product 2 - Standard cell */}
+                    <Link
+                      href={`/products/${p2.slug}`}
+                      className="col-span-1 row-span-1 group relative overflow-hidden rounded-3xl"
+                    >
+                      <Image
+                        src={p2.thumbnail}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        alt={p2.name}
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                      <div className="absolute bottom-4 left-4 text-white">
+                        <h3 className="text-xl font-serif font-bold">{p2.name}</h3>
+                        <p className="text-lg font-bold">₹{p2.price}</p>
+                      </div>
+                      {p2.isFeatured && (
+                        <div className="absolute top-4 right-4 bg-[hsl(var(--saffron))] text-white px-3 py-1 rounded-full text-xs font-bold">
+                          Featured
+                        </div>
                       )}
-                    </div>
+                    </Link>
 
-                    {/* Stock Status */}
-                    {product.stock < 10 && (
-                      <p className="mt-2 text-xs font-semibold text-orange-600">
-                        Only {product.stock} left!
-                      </p>
-                    )}
+                    {/* Product 3 - Standard cell */}
+                    <Link
+                      href={`/products/${p3.slug}`}
+                      className="col-span-1 row-span-1 group relative overflow-hidden rounded-3xl"
+                    >
+                      <Image
+                        src={p3.thumbnail}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        alt={p3.name}
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                      <div className="absolute bottom-4 left-4 text-white">
+                        <h3 className="text-xl font-serif font-bold">{p3.name}</h3>
+                        <p className="text-lg font-bold">₹{p3.price}</p>
+                      </div>
+                      {p3.isFeatured && (
+                        <div className="absolute top-4 right-4 bg-[hsl(var(--saffron))] text-white px-3 py-1 rounded-full text-xs font-bold">
+                          Featured
+                        </div>
+                      )}
+                    </Link>
 
-                    {/* Add to Cart Button */}
-                    <button className="mt-4 w-full rounded-full bg-[hsl(var(--saffron))] py-3 font-bold text-white transition-all hover:bg-[hsl(var(--sienna))]">
-                      Add to Cart
-                    </button>
+                    {/* Product 4 - Tall (1x2) */}
+                    <Link
+                      href={`/products/${p4.slug}`}
+                      className="col-span-1 row-span-2 group relative overflow-hidden rounded-3xl"
+                    >
+                      <Image
+                        src={p4.thumbnail}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        alt={p4.name}
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                      <div className="absolute bottom-6 left-4 text-white">
+                        <h3 className="text-2xl font-serif font-bold mb-2">{p4.name}</h3>
+                        <p className="text-lg font-bold">₹{p4.price}</p>
+                      </div>
+                      {p4.isFeatured && (
+                        <div className="absolute top-4 right-4 bg-[hsl(var(--saffron))] text-white px-3 py-1 rounded-full text-xs font-bold">
+                          Featured
+                        </div>
+                      )}
+                    </Link>
+
+                    {/* Product 5 - Wide (2x1) */}
+                    <Link
+                      href={`/products/${p5.slug}`}
+                      className="col-span-2 row-span-1 group relative overflow-hidden rounded-3xl"
+                    >
+                      <Image
+                        src={p5.thumbnail}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        alt={p5.name}
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                      <div className="absolute bottom-4 left-4 text-white">
+                        <h3 className="text-2xl font-serif font-bold">{p5.name}</h3>
+                        <p className="text-lg font-bold">₹{p5.price}</p>
+                      </div>
+                      {p5.isFeatured && (
+                        <div className="absolute top-4 right-4 bg-[hsl(var(--saffron))] text-white px-3 py-1 rounded-full text-xs font-bold">
+                          Featured
+                        </div>
+                      )}
+                    </Link>
+
+                    {/* Product 6 */}
+                    <Link
+                      href={`/products/${p6.slug}`}
+                      className="col-span-1 row-span-1 group relative overflow-hidden rounded-3xl"
+                    >
+                      <Image
+                        src={p6.thumbnail}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        alt={p6.name}
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                      <div className="absolute bottom-4 left-4 text-white">
+                        <h3 className="text-xl font-serif font-bold">{p6.name}</h3>
+                        <p className="text-lg font-bold">₹{p6.price}</p>
+                      </div>
+                      {p6.isFeatured && (
+                        <div className="absolute top-4 right-4 bg-[hsl(var(--saffron))] text-white px-3 py-1 rounded-full text-xs font-bold">
+                          Featured
+                        </div>
+                      )}
+                    </Link>
                   </div>
-                </Link>
-              ))}
-            </div>
+                </div>
+              )
+            })()}
+
+            {/* All Products Grid (Standard 4-column layout) */}
+            {filteredProducts.length > 0 && (
+              <>
+                <h2 className="text-3xl font-serif font-bold text-[hsl(var(--sienna))] mb-8">
+                  {filteredProducts.length >= 6 ? 'All Products' : 'Our Products'}
+                </h2>
+
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {filteredProducts.slice(filteredProducts.length >= 6 ? 6 : 0).map((product) => (
+                    <Link
+                      key={product.id}
+                      href={`/products/${product.slug}`}
+                      className="group"
+                    >
+                      <div className="relative h-80 rounded-2xl overflow-hidden mb-4">
+                        <Image
+                          src={product.thumbnail}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          alt={product.name}
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                        />
+                        {product.isFeatured && (
+                          <div className="absolute top-4 right-4 bg-[hsl(var(--saffron))] text-white px-3 py-1 rounded-full text-xs font-bold">
+                            Featured
+                          </div>
+                        )}
+                        {product.comparePrice && (
+                          <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                            Save ₹{product.comparePrice - product.price}
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="font-serif text-xl font-bold text-[hsl(var(--sienna))] mb-2">
+                        {product.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                        {product.shortDesc}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl font-bold text-[hsl(var(--sienna))]">
+                          ₹{product.price}
+                        </span>
+                        <button className="bg-[hsl(var(--saffron))] text-white px-6 py-2 rounded-full font-bold hover:shadow-lg transition-all hover:scale-105">
+                          View
+                        </button>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </>
+            )}
           </Suspense>
 
           {/* Empty State */}
@@ -333,19 +529,40 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
 function ProductGridSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="overflow-hidden rounded-2xl bg-white shadow-md">
-          <div className="h-64 animate-pulse bg-gray-200" />
-          <div className="p-6">
-            <div className="mb-2 h-4 w-20 animate-pulse rounded bg-gray-200" />
-            <div className="mb-2 h-6 w-3/4 animate-pulse rounded bg-gray-200" />
-            <div className="mb-4 h-4 w-full animate-pulse rounded bg-gray-200" />
-            <div className="h-8 w-1/2 animate-pulse rounded bg-gray-200" />
-            <div className="mt-4 h-12 w-full animate-pulse rounded-full bg-gray-200" />
-          </div>
+    <div>
+      {/* Featured Products Bento Skeleton */}
+      <div className="mb-16">
+        <div className="h-10 w-64 animate-pulse rounded bg-gray-200 mb-8" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[250px]">
+          {/* Large featured */}
+          <div className="col-span-2 row-span-2 bg-gray-200 rounded-3xl animate-pulse" />
+          {/* Two standard */}
+          <div className="col-span-1 row-span-1 bg-gray-200 rounded-3xl animate-pulse" />
+          <div className="col-span-1 row-span-1 bg-gray-200 rounded-3xl animate-pulse" />
+          {/* Tall */}
+          <div className="col-span-1 row-span-2 bg-gray-200 rounded-3xl animate-pulse" />
+          {/* Wide */}
+          <div className="col-span-2 row-span-1 bg-gray-200 rounded-3xl animate-pulse" />
+          {/* Standard */}
+          <div className="col-span-1 row-span-1 bg-gray-200 rounded-3xl animate-pulse" />
         </div>
-      ))}
+      </div>
+
+      {/* Standard Grid Skeleton */}
+      <div className="h-8 w-48 animate-pulse rounded bg-gray-200 mb-8" />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="overflow-hidden">
+            <div className="h-80 animate-pulse bg-gray-200 rounded-2xl mb-4" />
+            <div className="h-6 w-3/4 animate-pulse rounded bg-gray-200 mb-2" />
+            <div className="h-4 w-full animate-pulse rounded bg-gray-200 mb-3" />
+            <div className="flex items-center justify-between">
+              <div className="h-8 w-1/3 animate-pulse rounded bg-gray-200" />
+              <div className="h-10 w-20 animate-pulse rounded-full bg-gray-200" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
