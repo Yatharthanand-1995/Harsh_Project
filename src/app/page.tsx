@@ -9,12 +9,12 @@ export default function HomePage() {
 
       <main className="min-h-screen">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(var(--cream))] via-[hsl(var(--warm-beige))] to-[#FAEBD7] px-4 py-24">
+        <section className="relative overflow-hidden bg-white px-4 py-24">
           {/* Animated Background Element */}
           <div className="pointer-events-none absolute -right-10 -top-32 h-[600px] w-[600px] animate-pulse rounded-full bg-[hsl(var(--saffron))]/20 blur-3xl" />
 
           <div className="container mx-auto">
-            <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div className="mx-auto max-w-4xl text-center">
               {/* Hero Text */}
               <div className="space-y-6">
                 <h1 className="font-serif text-5xl font-black leading-tight text-[hsl(var(--sienna))] lg:text-6xl">
@@ -31,7 +31,7 @@ export default function HomePage() {
                   brings authentic handcrafted quality to every occasion with
                   same-day and midnight delivery across India.
                 </p>
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-wrap justify-center gap-4">
                   <Link
                     href="/products?category=bakery"
                     className="rounded-full bg-[hsl(var(--sienna))] px-8 py-4 font-bold text-[hsl(var(--cream))] shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl"
@@ -47,57 +47,12 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Product Cards Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { icon: '🥖', title: 'Artisan Breads', subtitle: 'Freshly Baked Daily' },
-                  { icon: '🎂', title: 'Celebration Cakes', subtitle: 'Custom Designs' },
-                  { icon: '🪔', title: 'Festive Hampers', subtitle: 'Traditional & Modern' },
-                  { icon: '🍪', title: 'Gourmet Cookies', subtitle: 'Gift Boxes' },
-                ].map((product) => (
-                  <div
-                    key={product.title}
-                    className="group rounded-3xl border-2 border-transparent bg-white p-6 text-center shadow-lg transition-all hover:-translate-y-2 hover:rotate-2 hover:border-[hsl(var(--saffron))] hover:shadow-2xl"
-                  >
-                    <div className="mb-3 text-5xl drop-shadow-md">{product.icon}</div>
-                    <h3 className="mb-2 font-serif text-lg font-bold text-[hsl(var(--sienna))]">
-                      {product.title}
-                    </h3>
-                    <p className="text-sm text-gray-600">{product.subtitle}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Story Section */}
-        <section className="bg-white px-4 py-20">
-          <div className="container mx-auto max-w-5xl text-center">
-            <h2 className="mb-4 font-serif text-5xl font-bold text-[hsl(var(--sienna))]">
-              Our Story
-            </h2>
-            <p className="mb-8 text-xl italic text-gray-600">
-              Every product tells a story of tradition, craftsmanship, and love
-            </p>
-            <div className="rounded-3xl bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))] p-12 shadow-xl">
-              <p className="mb-6 text-lg leading-relaxed text-gray-700">
-                Homespun was born from a simple belief: the best gifts come from
-                the heart and hands of skilled artisans. We partner with India&apos;s
-                finest bakers and craftspeople who pour their expertise into every
-                loaf, cake, and festive creation.
-              </p>
-              <p className="text-lg leading-relaxed text-gray-700">
-                From sunrise sourdough to midnight birthday cakes, from Diwali
-                diyas to handcrafted celebration hampers, we celebrate the artisan
-                spirit that makes every occasion truly special.
-              </p>
             </div>
           </div>
         </section>
 
         {/* Categories Section */}
-        <section className="bg-gradient-to-br from-[hsl(var(--cream))] to-[#FAEBD7] px-4 py-20">
+        <section className="bg-white px-4 py-20">
           <div className="container mx-auto">
             <h2 className="mb-4 text-center font-serif text-5xl font-bold text-[hsl(var(--sienna))]">
               Artisan Collections
@@ -218,7 +173,7 @@ export default function HomePage() {
               ].map((feature) => (
                 <div
                   key={feature.title}
-                  className="group rounded-3xl bg-gradient-to-br from-[hsl(var(--cream))] to-white p-8 text-center shadow-lg transition-all hover:-translate-y-2 hover:shadow-2xl"
+                  className="group rounded-3xl bg-white p-8 text-center shadow-xl border border-gray-100 transition-all hover:-translate-y-2 hover:shadow-2xl hover:border-[hsl(var(--saffron))]/30"
                 >
                   <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[hsl(var(--sienna))] to-[#A0522D] text-4xl shadow-lg">
                     {feature.icon}
@@ -236,7 +191,7 @@ export default function HomePage() {
         </section>
 
         {/* Festival Banner */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(var(--deep-red))] to-[#8B0000] px-4 py-20 text-center text-white">
+        <section className="relative overflow-hidden bg-gradient-to-br from-white to-orange-50 px-4 py-20 text-center border-y-4 border-[hsl(var(--saffron))] shadow-xl">
           <div className="pointer-events-none absolute left-[10%] top-0 animate-pulse text-[15rem] opacity-10">
             🪔
           </div>
@@ -248,7 +203,7 @@ export default function HomePage() {
             <h2 className="mb-6 font-serif text-5xl font-black text-[hsl(var(--saffron))]">
               Festival Season is Here!
             </h2>
-            <p className="mb-8 text-xl leading-relaxed">
+            <p className="mb-8 text-xl leading-relaxed text-gray-700">
               Celebrate India&apos;s rich traditions with our curated festive
               collections. From Diwali hampers to Holi celebration kits, make
               every festival memorable.
@@ -263,7 +218,7 @@ export default function HomePage() {
         </section>
 
         {/* Testimonials */}
-        <section className="bg-[hsl(var(--cream))] px-4 py-20">
+        <section className="bg-white px-4 py-20">
           <div className="container mx-auto">
             <h2 className="mb-12 text-center font-serif text-5xl font-bold text-[hsl(var(--sienna))]">
               Stories from Our Community
