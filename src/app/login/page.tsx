@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { TEST_USER } from '@/lib/constants'
 
 function LoginForm() {
   const router = useRouter()
@@ -131,11 +132,13 @@ function LoginForm() {
                 </Link>
               </div>
 
-              <div className="mt-6 border-t pt-6">
-                <p className="text-center text-xs text-gray-500">
-                  Test Account: test@homespun.com / password123
-                </p>
-              </div>
+              {TEST_USER.SHOW_IN_DEV && (
+                <div className="mt-6 border-t pt-6">
+                  <p className="text-center text-xs text-gray-500">
+                    Test Account: {TEST_USER.EMAIL} / {TEST_USER.PASSWORD}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

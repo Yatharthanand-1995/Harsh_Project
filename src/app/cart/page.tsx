@@ -5,43 +5,58 @@ import { Footer } from '@/components/layout/footer'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useCartStore } from '@/lib/stores/cart-store'
 import { useSession } from 'next-auth/react'
+import { PRICING } from '@/lib/constants'
 
 export default function CartPage() {
   const { data: session, status } = useSession()
-  const { items, subtotal, itemCount, isLoading, error, fetchCart, updateQuantity, removeItem, clearError } =
-    useCartStore()
+  const {
+    items,
+    subtotal,
+    itemCount,
+    isLoading,
+    error,
+    fetchCart,
+    updateQuantityOptimistic,
+    removeItemOptimistic,
+    clearError
+  } = useCartStore()
 
   useEffect(() => {
     if (status === 'authenticated') {
       fetchCart()
     }
-  }, [status, fetchCart])
+    // fetchCart is a stable reference from Zustand, safe to omit from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status])
 
-  const handleUpdateQuantity = async (itemId: string, currentQuantity: number, change: number) => {
+  const handleUpdateQuantity = (itemId: string, currentQuantity: number, change: number) => {
     const newQuantity = currentQuantity + change
     if (newQuantity < 1) return
 
-    try {
-      await updateQuantity(itemId, newQuantity)
-    } catch (error) {
-      console.error('Failed to update quantity:', error)
-    }
+    // Use optimistic update with debouncing
+    updateQuantityOptimistic(itemId, newQuantity)
   }
 
-  const handleRemoveItem = async (itemId: string) => {
-    try {
-      await removeItem(itemId)
-    } catch (error) {
-      console.error('Failed to remove item:', error)
-    }
+  const handleRemoveItem = (itemId: string) => {
+    // Use optimistic remove
+    removeItemOptimistic(itemId)
   }
 
-  const deliveryFee = subtotal > 500 ? 0 : 50
-  const tax = Math.round(subtotal * 0.05) // 5% GST
-  const total = subtotal + deliveryFee + tax
+  // Memoize expensive calculations
+  const { deliveryFee, tax, total } = useMemo(() => {
+    const delivery = subtotal >= PRICING.FREE_DELIVERY_THRESHOLD ? 0 : PRICING.DELIVERY_FEE
+    const taxAmount = Math.round(subtotal * PRICING.GST_RATE)
+    const totalAmount = subtotal + delivery + taxAmount
+
+    return {
+      deliveryFee: delivery,
+      tax: taxAmount,
+      total: totalAmount,
+    }
+  }, [subtotal])
 
   // Show login prompt if not authenticated
   if (status === 'unauthenticated') {

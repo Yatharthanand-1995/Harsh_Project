@@ -5,6 +5,7 @@ import { Minus, Plus, ShoppingCart, Heart, Share2 } from 'lucide-react'
 import { useCartStore } from '@/lib/stores/cart-store'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 interface ProductActionsProps {
   productId: string
@@ -44,14 +45,18 @@ export function ProductActions({ productId, productName, price, stock }: Product
       await addToCart(productId, quantity)
 
       // Show success message
-      alert(`✓ ${productName} added to cart!`)
+      toast.success(`${productName} added to cart!`, {
+        description: `Quantity: ${quantity}`,
+      })
 
       // Reset quantity to 1 after adding
       setQuantity(1)
     } catch (error) {
-      console.error('Error adding to cart:', error)
+      // Error already logged by API and displayed via toast
       const errorMessage = error instanceof Error ? error.message : 'Failed to add to cart'
-      alert(`Failed to add to cart: ${errorMessage}`)
+      toast.error('Failed to add to cart', {
+        description: errorMessage,
+      })
     } finally {
       setIsAddingToCart(false)
     }
@@ -59,7 +64,7 @@ export function ProductActions({ productId, productName, price, stock }: Product
 
   const handleWishlist = () => {
     // TODO: Implement wishlist functionality
-    alert('Wishlist feature coming soon!')
+    toast.info('Wishlist feature coming soon!')
   }
 
   const handleShare = async () => {
@@ -71,12 +76,12 @@ export function ProductActions({ productId, productName, price, stock }: Product
           url: window.location.href,
         })
       } catch (error) {
-        console.error('Error sharing:', error)
+        // Error sharing via Web Share API (user likely canceled)
       }
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href)
-      alert('Link copied to clipboard!')
+      toast.success('Link copied to clipboard!')
     }
   }
 

@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { Merriweather, Source_Sans_3 } from 'next/font/google'
 import { AuthProvider } from '@/components/providers/session-provider'
+import { ErrorBoundary } from '@/components/error-boundary'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 const merriweather = Merriweather({
@@ -56,7 +59,14 @@ export default function RootLayout({
       <body
         className={`${merriweather.variable} ${sourceSans.variable} font-sans antialiased`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>{children}</AuthProvider>
+          <Toaster position="top-right" richColors />
+        </ErrorBoundary>
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   )

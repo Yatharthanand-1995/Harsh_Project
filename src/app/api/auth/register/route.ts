@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/logger'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.error('Error creating user:', error)
+    logger.error({ error }, 'Error creating user')
     return NextResponse.json(
       { error: 'Failed to create user' },
       { status: 500 }

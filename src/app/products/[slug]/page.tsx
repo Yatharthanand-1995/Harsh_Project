@@ -4,7 +4,7 @@ import { ProductActions } from '@/components/product/product-actions'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { getProductBySlug } from '@/data/products'
+import { prisma } from '@/lib/prisma'
 
 interface ProductPageProps {
   params: Promise<{
@@ -14,17 +14,33 @@ interface ProductPageProps {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params
-  const product = getProductBySlug(slug)
+
+  // Fetch product from database
+  const product = await prisma.product.findUnique({
+    where: {
+      slug,
+      isActive: true,
+    },
+    include: {
+      category: true,
+      reviews: {
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      },
+    },
+  })
 
   if (!product) {
     notFound()
-  }
-
-  const categoryDisplay = {
-    bakery: 'Artisan Bakery',
-    festivals: 'Festival Gifts',
-    corporate: 'Corporate Gifting',
-    cakes: 'Celebration Cakes',
   }
 
   return (
@@ -91,7 +107,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className="space-y-6">
               <div>
                 <div className="mb-2 inline-block rounded-full bg-[hsl(var(--saffron))]/20 px-4 py-1 text-sm font-semibold text-[hsl(var(--sienna))]">
-                  {product.category}
+                  {product.category.name}
                 </div>
                 <h1 className="mb-4 font-serif text-4xl font-bold text-[hsl(var(--sienna))]">
                   {product.name}
@@ -102,25 +118,30 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
 
               {/* Reviews */}
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span
-                      key={i}
-                      className={`text-xl ${
-                        i < Math.floor(product.reviews.average)
-                          ? 'text-[hsl(var(--saffron))]'
-                          : 'text-gray-300'
-                      }`}
-                    >
-                      ⭐
-                    </span>
-                  ))}
+              {product.reviews.length > 0 && (
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => {
+                      const averageRating = product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length
+                      return (
+                        <span
+                          key={i}
+                          className={`text-xl ${
+                            i < Math.floor(averageRating)
+                              ? 'text-[hsl(var(--saffron))]'
+                              : 'text-gray-300'
+                          }`}
+                        >
+                          ⭐
+                        </span>
+                      )
+                    })}
+                  </div>
+                  <span className="text-gray-600">
+                    {(product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length).toFixed(1)} ({product.reviews.length} reviews)
+                  </span>
                 </div>
-                <span className="text-gray-600">
-                  {product.reviews.average} ({product.reviews.count} reviews)
-                </span>
-              </div>
+              )}
 
               {/* Price */}
               <div className="rounded-2xl bg-white p-6 shadow-lg">

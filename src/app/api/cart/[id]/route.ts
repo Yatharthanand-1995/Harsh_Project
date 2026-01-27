@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/logger'
 import { z } from 'zod'
 
 const updateCartSchema = z.object({
@@ -93,7 +94,7 @@ export async function PATCH(
       )
     }
 
-    console.error('Error updating cart item:', error)
+    logger.error({ error }, 'Error updating cart item')
     return NextResponse.json(
       { error: 'Failed to update cart item' },
       { status: 500 }
@@ -145,7 +146,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Item removed from cart' })
   } catch (error) {
-    console.error('Error deleting cart item:', error)
+    logger.error({ error }, 'Error deleting cart item')
     return NextResponse.json(
       { error: 'Failed to remove item from cart' },
       { status: 500 }

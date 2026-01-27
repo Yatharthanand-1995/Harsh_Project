@@ -15,7 +15,9 @@ export function Header() {
     if (status === 'authenticated') {
       fetchCart()
     }
-  }, [status, fetchCart])
+    // fetchCart is a stable reference from Zustand, safe to omit from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-[hsl(var(--sienna))] to-[#A0522D] shadow-lg">

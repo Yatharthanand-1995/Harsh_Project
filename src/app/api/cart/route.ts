@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/logger'
 import { z } from 'zod'
 
 const addToCartSchema = z.object({
@@ -58,7 +59,7 @@ export async function GET() {
       itemCount: cartItems.reduce((sum, item) => sum + item.quantity, 0),
     })
   } catch (error) {
-    console.error('Error fetching cart:', error)
+    logger.error({ error }, 'Error fetching cart')
     return NextResponse.json(
       { error: 'Failed to fetch cart' },
       { status: 500 }
@@ -184,7 +185,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.error('Error adding to cart:', error)
+    logger.error({ error }, 'Error adding to cart')
     return NextResponse.json(
       { error: 'Failed to add item to cart' },
       { status: 500 }

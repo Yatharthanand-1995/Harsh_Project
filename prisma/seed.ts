@@ -53,6 +53,17 @@ async function main() {
         isActive: true,
       },
     }),
+    prisma.category.upsert({
+      where: { slug: 'frozen' },
+      update: {},
+      create: {
+        name: 'Frozen & Ready to Consume',
+        slug: 'frozen',
+        description: 'Frozen products ready to heat and eat',
+        order: 5,
+        isActive: true,
+      },
+    }),
   ])
 
   const categoryMap = categories.reduce(
@@ -93,6 +104,8 @@ async function main() {
         allergens: product.allergens ?? null,
         tags: product.tags ?? [],
         isFeatured: product.isFeatured ?? false,
+        bakeryType: (product as any).bakeryType ?? null,
+        festivalType: (product as any).festivalType ?? null,
         isActive: true,
       },
     })

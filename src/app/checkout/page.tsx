@@ -2,29 +2,17 @@
 
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Calendar, Clock, MapPin, CreditCard, Truck } from 'lucide-react'
-
-// Mock cart data
-const CART_ITEMS = [
-  {
-    id: '1',
-    name: 'Artisan Sourdough Bread',
-    price: 299,
-    quantity: 2,
-    thumbnail: '🥖',
-  },
-  {
-    id: '2',
-    name: 'Chocolate Celebration Cake',
-    price: 899,
-    quantity: 1,
-    thumbnail: '🎂',
-  },
-]
+import { useCartStore } from '@/lib/stores/cart-store'
+import { PRICING } from '@/lib/constants'
 
 export default function CheckoutPage() {
+  const router = useRouter()
+  const { cart, fetchCart, isLoading } = useCartStore()
   const [step, setStep] = useState(1)
+  const [isProcessing, setIsProcessing] = useState(false)
   const [formData, setFormData] = useState({
     // Address
     name: '',
@@ -42,21 +30,115 @@ export default function CheckoutPage() {
     isGift: false,
   })
 
-  const subtotal = CART_ITEMS.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  )
-  const deliveryFee = subtotal > 500 ? 0 : 50
-  const tax = Math.round(subtotal * 0.05)
-  const total = subtotal + deliveryFee + tax
+  // Fetch cart on mount
+  useEffect(() => {
+    fetchCart()
+  }, [fetchCart])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Calculate totals using memoization
+  const { subtotal, deliveryFee, tax, total } = useMemo(() => {
+    const sub = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+    const delivery = sub >= PRICING.FREE_DELIVERY_THRESHOLD ? 0 : PRICING.DELIVERY_FEE
+    const taxAmount = Math.round(sub * PRICING.GST_RATE)
+    const totalAmount = sub + delivery + taxAmount
+
+    return {
+      subtotal: sub,
+      deliveryFee: delivery,
+      tax: taxAmount,
+      total: totalAmount,
+    }
+  }, [cart])
+
+  // Redirect if cart is empty
+  useEffect(() => {
+    if (!isLoading && cart.length === 0) {
+      router.push('/cart')
+    }
+  }, [cart, isLoading, router])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (step < 3) {
       setStep(step + 1)
     } else {
-      // Process payment
-      alert('Processing payment...')
+      // Process payment on step 3
+      await handlePayment()
+    }
+  }
+
+  const handlePayment = async () => {
+    setIsProcessing(true)
+
+    try {
+      // TODO: First, save address if it's a new address
+      // For now, we'll assume the address exists or create it inline
+
+      // Create order
+      const orderResponse = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          addressId: 'temp-address-id', // TODO: Implement address management
+          deliverySlot: formData.deliverySlot,
+          deliveryDate: formData.deliveryDate,
+          deliveryNotes: formData.deliveryNotes,
+          giftMessage: formData.giftMessage,
+          isGift: formData.isGift,
+        }),
+      })
+
+      if (!orderResponse.ok) {
+        throw new Error('Failed to create order')
+      }
+
+      const { order, razorpayOrderId } = await orderResponse.json()
+
+      // Initialize Razorpay payment
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.total * 100,
+        currency: 'INR',
+        name: 'Homespun',
+        description: `Order #${order.orderNumber}`,
+        order_id: razorpayOrderId,
+        handler: async function (response: any) {
+          // Verify payment
+          const verifyResponse = await fetch('/api/orders/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: order.orderNumber,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            }),
+          })
+
+          if (verifyResponse.ok) {
+            router.push(`/orders/${order.id}?success=true`)
+          } else {
+            alert('Payment verification failed. Please contact support.')
+          }
+        },
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        theme: {
+          color: '#8B4513',
+        },
+      }
+
+      const razorpay = new (window as any).Razorpay(options)
+      razorpay.open()
+    } catch (error) {
+      // Error handling: payment flow interrupted
+      alert('Failed to process payment. Please try again.')
+    } finally {
+      setIsProcessing(false)
     }
   }
 
@@ -66,6 +148,36 @@ export default function CheckoutPage() {
     { id: 'evening', label: 'Evening (4 PM - 8 PM)', icon: '🌆' },
     { id: 'midnight', label: 'Midnight (11 PM - 1 AM)', icon: '🌙', extra: '+₹100' },
   ]
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <main className="flex min-h-screen items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="mb-4 text-lg font-semibold">Loading checkout...</div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    )
+  }
+
+  // Show empty cart message if no items
+  if (cart.length === 0) {
+    return (
+      <>
+        <Header />
+        <main className="flex min-h-screen items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="mb-4 text-lg font-semibold">Your cart is empty</div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    )
+  }
 
   return (
     <>
@@ -422,9 +534,10 @@ export default function CheckoutPage() {
                     )}
                     <button
                       type="submit"
-                      className="flex-1 rounded-full bg-[hsl(var(--saffron))] px-8 py-4 font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                      disabled={isProcessing}
+                      className="flex-1 rounded-full bg-[hsl(var(--saffron))] px-8 py-4 font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
                     >
-                      {step === 3 ? 'Place Order & Pay' : 'Continue'}
+                      {isProcessing ? 'Processing...' : step === 3 ? 'Place Order & Pay' : 'Continue'}
                     </button>
                   </div>
                 </div>
@@ -439,16 +552,20 @@ export default function CheckoutPage() {
                 </h3>
 
                 <div className="mb-6 space-y-4">
-                  {CART_ITEMS.map((item) => (
+                  {cart.map((item) => (
                     <div key={item.id} className="flex gap-3">
-                      <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))] text-3xl">
-                        {item.thumbnail}
+                      <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))]">
+                        <img
+                          src={item.product.thumbnail}
+                          alt={item.product.name}
+                          className="h-full w-full object-cover"
+                        />
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-gray-800">{item.name}</p>
+                        <p className="font-semibold text-gray-800">{item.product.name}</p>
                         <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                         <p className="font-bold text-[hsl(var(--sienna))]">
-                          ₹{item.price * item.quantity}
+                          ₹{item.product.price * item.quantity}
                         </p>
                       </div>
                     </div>

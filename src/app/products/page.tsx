@@ -1,14 +1,14 @@
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { Pagination, ResultsInfo } from '@/components/pagination'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Suspense } from 'react'
+import { prisma } from '@/lib/prisma'
+import { PAGINATION } from '@/lib/constants'
 import {
-  PRODUCTS,
-  getAvailableFestivals,
   FESTIVAL_NAMES,
   FestivalType,
-  getAvailableBakeryTypes,
   BAKERY_TYPE_NAMES,
   BakeryType,
 } from '@/data/products'
@@ -20,41 +20,103 @@ interface ProductsPageProps {
     featured?: string
     festival?: string
     bakeryType?: string
+    page?: string
   }>
 }
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const params = await searchParams
-  const { category, search, featured, festival, bakeryType } = params
+  const { category, search, featured, festival, bakeryType, page } = params
 
-  // Filter products based on search params
-  let filteredProducts = PRODUCTS
+  // Parse page number
+  const currentPage = Math.max(1, parseInt(page || '1', 10))
+  const perPage = PAGINATION.DEFAULT_PAGE_SIZE
+
+  // Build Prisma where clause based on filters
+  const where: any = {
+    isActive: true,
+  }
 
   if (category) {
-    filteredProducts = filteredProducts.filter((p) => p.category === category)
+    where.category = { slug: category }
   }
 
   if (festival) {
-    filteredProducts = filteredProducts.filter((p) => p.festivalType === festival)
+    where.festivalType = festival
   }
 
   if (bakeryType) {
-    filteredProducts = filteredProducts.filter((p) => p.bakeryType === bakeryType)
+    where.bakeryType = bakeryType
   }
 
   if (featured === 'true') {
-    filteredProducts = filteredProducts.filter((p) => p.isFeatured)
+    where.isFeatured = true
   }
 
   if (search) {
-    filteredProducts = filteredProducts.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase())
-    )
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { shortDesc: { contains: search, mode: 'insensitive' } },
+    ]
   }
 
-  // Get available festivals and bakery types for the filters
-  const availableFestivals = getAvailableFestivals()
-  const availableBakeryTypes = getAvailableBakeryTypes()
+  // Get total count for pagination
+  const totalCount = await prisma.product.count({ where })
+
+  // Calculate pagination
+  const totalPages = Math.ceil(totalCount / perPage)
+  const skip = (currentPage - 1) * perPage
+
+  // Fetch products from database with category included and pagination
+  const filteredProducts = await prisma.product.findMany({
+    where,
+    include: {
+      category: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    skip,
+    take: perPage,
+  })
+
+  // Get total counts for filter buttons
+  const [
+    allProductsCount,
+    bakeryCount,
+    cakesCount,
+    festivalsCount,
+    frozenCount,
+  ] = await Promise.all([
+    prisma.product.count({ where: { isActive: true } }),
+    prisma.product.count({ where: { isActive: true, category: { slug: 'bakery' } } }),
+    prisma.product.count({ where: { isActive: true, category: { slug: 'cakes' } } }),
+    prisma.product.count({ where: { isActive: true, category: { slug: 'festivals' } } }),
+    prisma.product.count({ where: { isActive: true, category: { slug: 'frozen' } } }),
+  ])
+
+  // Get available festivals and bakery types from database
+  const availableFestivals = await prisma.product.findMany({
+    where: {
+      isActive: true,
+      festivalType: { not: null },
+    },
+    select: {
+      festivalType: true,
+    },
+    distinct: ['festivalType'],
+  })
+
+  const availableBakeryTypes = await prisma.product.findMany({
+    where: {
+      isActive: true,
+      bakeryType: { not: null },
+    },
+    select: {
+      bakeryType: true,
+    },
+    distinct: ['bakeryType'],
+  })
 
   const categoryTitle = {
     bakery: 'Artisan Bakery',
@@ -156,7 +218,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
                   }`}
                 >
-                  All ({PRODUCTS.length})
+                  All ({allProductsCount})
                 </Link>
                 <Link
                   href="/products?category=bakery"
@@ -166,7 +228,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
                   }`}
                 >
-                  🥖 Bakery ({PRODUCTS.filter(p => p.category === 'bakery').length})
+                  🥖 Bakery ({bakeryCount})
                 </Link>
                 <Link
                   href="/products?category=cakes"
@@ -176,7 +238,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
                   }`}
                 >
-                  🎂 Cakes ({PRODUCTS.filter(p => p.category === 'cakes').length})
+                  🎂 Cakes ({cakesCount})
                 </Link>
                 <Link
                   href="/products?category=festivals"
@@ -186,7 +248,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
                   }`}
                 >
-                  🪔 Festivals ({PRODUCTS.filter(p => p.category === 'festivals').length})
+                  🪔 Festivals ({festivalsCount})
                 </Link>
                 <Link
                   href="/products?category=frozen"
@@ -196,7 +258,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
                   }`}
                 >
-                  🧊 Frozen ({PRODUCTS.filter(p => p.category === 'frozen').length})
+                  🧊 Frozen ({frozenCount})
                 </Link>
               </div>
 
@@ -224,20 +286,18 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   All Bakery
                 </Link>
                 {availableBakeryTypes.map((type) => {
-                  const typeProductCount = PRODUCTS.filter(
-                    (p) => p.bakeryType === type
-                  ).length
+                  if (!type.bakeryType) return null
                   return (
                     <Link
-                      key={type}
-                      href={`/products?category=bakery&bakeryType=${type}`}
+                      key={type.bakeryType}
+                      href={`/products?category=bakery&bakeryType=${type.bakeryType}`}
                       className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
-                        bakeryType === type
+                        bakeryType === type.bakeryType
                           ? 'bg-[hsl(var(--saffron))] text-white shadow-md scale-105'
                           : 'bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                       }`}
                     >
-                      {BAKERY_TYPE_NAMES[type]} ({typeProductCount})
+                      {BAKERY_TYPE_NAMES[type.bakeryType as BakeryType]}
                     </Link>
                   )
                 })}
@@ -262,21 +322,19 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 >
                   All Festivals
                 </Link>
-                {availableFestivals.map((festivalType) => {
-                  const festivalProductCount = PRODUCTS.filter(
-                    (p) => p.festivalType === festivalType
-                  ).length
+                {availableFestivals.map((fest) => {
+                  if (!fest.festivalType) return null
                   return (
                     <Link
-                      key={festivalType}
-                      href={`/products?category=festivals&festival=${festivalType}`}
+                      key={fest.festivalType}
+                      href={`/products?category=festivals&festival=${fest.festivalType}`}
                       className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
-                        festival === festivalType
+                        festival === fest.festivalType
                           ? 'bg-[hsl(var(--saffron))] text-white shadow-md scale-105'
                           : 'bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                       }`}
                     >
-                      {FESTIVAL_NAMES[festivalType]} ({festivalProductCount})
+                      {FESTIVAL_NAMES[fest.festivalType as FestivalType]}
                     </Link>
                   )
                 })}
@@ -498,6 +556,25 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     </Link>
                   ))}
                 </div>
+
+                {/* Results Info & Pagination */}
+                <ResultsInfo
+                  currentPage={currentPage}
+                  perPage={perPage}
+                  totalCount={totalCount}
+                />
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  baseUrl="/products"
+                  searchParams={{
+                    ...(category && { category }),
+                    ...(search && { search }),
+                    ...(featured && { featured }),
+                    ...(festival && { festival }),
+                    ...(bakeryType && { bakeryType }),
+                  }}
+                />
               </>
             )}
           </Suspense>
