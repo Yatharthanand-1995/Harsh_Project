@@ -153,11 +153,11 @@ export default function CartPage() {
                       key={item.id}
                       className="overflow-hidden rounded-2xl bg-white p-6 shadow-md transition-all hover:shadow-lg"
                     >
-                      <div className="flex gap-6">
+                      <div className="flex gap-4 sm:gap-6">
                         {/* Product Image */}
                         <Link
                           href={`/products/${item.product.slug}`}
-                          className="relative h-32 w-32 flex-shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))] transition-transform hover:scale-105"
+                          className="relative h-24 w-24 sm:h-32 sm:w-32 flex-shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))] transition-transform hover:scale-105"
                         >
                           <Image
                             src={item.product.thumbnail}
@@ -173,7 +173,7 @@ export default function CartPage() {
                           <div>
                             <Link
                               href={`/products/${item.product.slug}`}
-                              className="mb-2 block font-serif text-xl font-bold text-[hsl(var(--sienna))] hover:text-[hsl(var(--saffron))]"
+                              className="mb-2 block font-serif text-base sm:text-lg font-bold text-[hsl(var(--sienna))] hover:text-[hsl(var(--saffron))]"
                             >
                               {item.product.name}
                             </Link>
@@ -189,7 +189,7 @@ export default function CartPage() {
 
                           {/* Quantity Controls */}
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-3">
                               <div className="flex items-center rounded-full border-2 border-gray-300">
                                 <button
                                   onClick={() =>

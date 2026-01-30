@@ -245,7 +245,7 @@ export default function CheckoutPage() {
                               onChange={(e) =>
                                 setFormData({ ...formData, name: e.target.value })
                               }
-                              className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                              className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
                               placeholder="John Doe"
                             />
                           </div>
@@ -261,7 +261,7 @@ export default function CheckoutPage() {
                               onChange={(e) =>
                                 setFormData({ ...formData, phone: e.target.value })
                               }
-                              className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                              className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
                               placeholder="9876543210"
                             />
                           </div>
@@ -278,7 +278,7 @@ export default function CheckoutPage() {
                             onChange={(e) =>
                               setFormData({ ...formData, email: e.target.value })
                             }
-                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                            className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
                             placeholder="john@example.com"
                           />
                         </div>
@@ -294,7 +294,7 @@ export default function CheckoutPage() {
                             onChange={(e) =>
                               setFormData({ ...formData, street: e.target.value })
                             }
-                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                            className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
                             placeholder="123 Main Street, Apartment 4B"
                           />
                         </div>
@@ -311,7 +311,7 @@ export default function CheckoutPage() {
                               onChange={(e) =>
                                 setFormData({ ...formData, city: e.target.value })
                               }
-                              className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                              className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
                               placeholder="Mumbai"
                             />
                           </div>
@@ -326,7 +326,7 @@ export default function CheckoutPage() {
                               onChange={(e) =>
                                 setFormData({ ...formData, state: e.target.value })
                               }
-                              className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                              className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
                               placeholder="Maharashtra"
                             />
                           </div>
@@ -342,7 +342,7 @@ export default function CheckoutPage() {
                               onChange={(e) =>
                                 setFormData({ ...formData, pincode: e.target.value })
                               }
-                              className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                              className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
                               placeholder="400001"
                             />
                           </div>
@@ -374,7 +374,7 @@ export default function CheckoutPage() {
                             onChange={(e) =>
                               setFormData({ ...formData, deliveryDate: e.target.value })
                             }
-                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                            className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
                           />
                         </div>
 
@@ -382,11 +382,11 @@ export default function CheckoutPage() {
                           <label className="mb-3 block text-sm font-semibold text-gray-700">
                             <Clock className="mb-1 inline h-4 w-4" /> Delivery Time Slot *
                           </label>
-                          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                          <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2">
                             {deliverySlots.map((slot) => (
                               <label
                                 key={slot.id}
-                                className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all ${
+                                className={`flex cursor-pointer items-center gap-3 sm:gap-4 rounded-xl border-2 p-3 sm:p-4 transition-all ${
                                   formData.deliverySlot === slot.id
                                     ? 'border-[hsl(var(--sienna))] bg-[hsl(var(--cream))]'
                                     : 'border-gray-300 hover:border-gray-400'
@@ -403,7 +403,7 @@ export default function CheckoutPage() {
                                       deliverySlot: e.target.value,
                                     })
                                   }
-                                  className="h-5 w-5"
+                                  className="h-6 w-6 sm:h-5 sm:w-5"
                                 />
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2">
@@ -431,7 +431,7 @@ export default function CheckoutPage() {
                               setFormData({ ...formData, deliveryNotes: e.target.value })
                             }
                             rows={3}
-                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                            className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
                             placeholder="Any special instructions for delivery..."
                           />
                         </div>

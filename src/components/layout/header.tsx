@@ -78,7 +78,7 @@ export function Header() {
         <div className="flex items-center gap-4">
           <Link
             href="/cart"
-            className="relative text-[hsl(var(--cream))] transition-colors hover:text-[hsl(var(--saffron))]"
+            className="relative text-[hsl(var(--cream))] transition-colors hover:text-[hsl(var(--saffron))] p-2 -m-2"
             aria-label="Shopping Cart"
           >
             <ShoppingCart className="h-6 w-6" />
@@ -93,7 +93,7 @@ export function Header() {
             <div className="flex items-center gap-3">
               <Link
                 href="/account"
-                className="hidden text-[hsl(var(--cream))] transition-colors hover:text-[hsl(var(--saffron))] md:block"
+                className="hidden text-[hsl(var(--cream))] transition-colors hover:text-[hsl(var(--saffron))] md:block p-2 -m-2"
                 aria-label="User Account"
               >
                 <User className="h-6 w-6" />
@@ -126,7 +126,7 @@ export function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-[hsl(var(--cream))]"
+            className="md:hidden text-[hsl(var(--cream))] p-2 -m-2"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle Menu"
           >

@@ -146,15 +146,15 @@ export default function HomePage() {
           {/* Content overlay - left aligned */}
           <div className="relative z-10 container mx-auto h-full flex items-center px-4">
             <div className="max-w-2xl text-white">
-              <h1 className="font-serif text-7xl lg:text-8xl font-black mb-6 leading-none drop-shadow-2xl">
+              <h1 className="font-serif text-4xl sm:text-6xl lg:text-8xl font-black mb-4 sm:mb-6 leading-none drop-shadow-2xl">
                 Handcrafted
                 <br />
                 with Heart
               </h1>
-              <p className="text-2xl mb-8 font-serif italic text-[hsl(var(--cream))] drop-shadow-lg">
+              <p className="text-lg sm:text-xl lg:text-3xl mb-6 sm:mb-8 font-serif italic text-[hsl(var(--cream))] drop-shadow-lg">
                 Where Traditions Rise
               </p>
-              <p className="text-xl mb-10 leading-relaxed drop-shadow-md">
+              <p className="text-base sm:text-lg lg:text-xl mb-8 sm:mb-10 leading-relaxed drop-shadow-md">
                 Discover artisan-baked delights and festive treasures crafted
                 with love. From celebration cakes to Diwali hampers, Homespun
                 brings authentic handcrafted quality to every occasion with
@@ -184,21 +184,21 @@ export default function HomePage() {
         </section>
 
         {/* Featured Products - Bento Grid */}
-        <section className="bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))] px-4 py-16">
+        <section className="bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))] px-4 py-8 sm:py-12 md:py-16">
           <div className="container mx-auto">
-            <h2 className="text-6xl font-serif font-bold text-[hsl(var(--sienna))] mb-3">
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold text-[hsl(var(--sienna))] mb-3">
               Artisan Collections
             </h2>
-            <p className="text-xl text-gray-600 mb-10">
+            <p className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-10">
               Handcrafted with love, delivered with care
             </p>
 
             {/* Bento Grid Layout */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 auto-rows-[180px] sm:auto-rows-[220px] md:auto-rows-[250px]">
               {/* Large featured item - spans 2 columns, 2 rows */}
               <Link
                 href="/products?category=celebration-cakes"
-                className="col-span-2 row-span-2 group relative overflow-hidden rounded-3xl"
+                className="col-span-1 sm:col-span-2 row-span-1 sm:row-span-2 group relative overflow-hidden rounded-3xl"
               >
                 <Image
                   src={IMAGES.cakes}
@@ -208,7 +208,7 @@ export default function HomePage() {
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-6 left-6 text-white">
+                <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 text-white">
                   <h3 className="text-3xl font-serif font-bold mb-2">
                     Celebration Cakes
                   </h3>
@@ -255,7 +255,7 @@ export default function HomePage() {
               {/* French Pastries - tall item */}
               <Link
                 href="/products?category=pastries"
-                className="col-span-1 row-span-2 group relative overflow-hidden rounded-3xl"
+                className="col-span-1 row-span-1 sm:row-span-2 group relative overflow-hidden rounded-3xl"
               >
                 <Image
                   src={IMAGES.pastries}
@@ -276,7 +276,7 @@ export default function HomePage() {
               {/* Festive Hampers - wide item */}
               <Link
                 href="/products?category=festivals"
-                className="col-span-2 row-span-1 group relative overflow-hidden rounded-3xl"
+                className="col-span-1 sm:col-span-2 row-span-1 group relative overflow-hidden rounded-3xl"
               >
                 <Image
                   src={IMAGES.diwali}
@@ -313,11 +313,11 @@ export default function HomePage() {
         </section>
 
         {/* Bestsellers Carousel */}
-        <section className="bg-white px-4 py-16">
+        <section className="bg-white px-4 py-8 sm:py-12 md:py-16">
           <div className="container mx-auto">
-            <div className="flex items-end justify-between mb-10">
+            <div className="flex items-end justify-between mb-6 sm:mb-10">
               <div>
-                <h2 className="text-5xl font-serif font-bold text-[hsl(var(--sienna))] mb-2">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[hsl(var(--sienna))] mb-2">
                   Bestsellers
                 </h2>
                 <p className="text-xl text-gray-600">
@@ -333,11 +333,11 @@ export default function HomePage() {
             </div>
 
             {/* Horizontal scroll carousel */}
-            <div className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+            <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
               {bestsellers.map((product) => (
                 <div
                   key={product.id}
-                  className="flex-shrink-0 w-80 snap-start group"
+                  className="flex-shrink-0 w-[calc(100vw-3rem)] sm:w-72 md:w-80 lg:w-96 snap-start group"
                 >
                   <div className="relative h-80 rounded-2xl overflow-hidden mb-4">
                     <Image
@@ -356,7 +356,7 @@ export default function HomePage() {
                     <span className="text-2xl font-bold text-[hsl(var(--sienna))]">
                       ₹{product.price}
                     </span>
-                    <button className="bg-[hsl(var(--saffron))] text-white px-6 py-2 rounded-full font-bold hover:shadow-lg transition-all hover:scale-105 active:scale-95">
+                    <button className="bg-[hsl(var(--saffron))] text-white px-4 sm:px-6 py-2 text-sm sm:text-base rounded-full font-bold hover:shadow-lg transition-all hover:scale-105 active:scale-95">
                       Add to Cart
                     </button>
                   </div>
@@ -377,7 +377,7 @@ export default function HomePage() {
         </section>
 
         {/* Our Story Section */}
-        <section className="bg-gradient-to-br from-[hsl(var(--cream))] to-white px-4 py-16">
+        <section className="bg-gradient-to-br from-[hsl(var(--cream))] to-white px-4 py-8 sm:py-12 md:py-16">
           <div className="container mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Left: Image */}
@@ -393,7 +393,7 @@ export default function HomePage() {
 
               {/* Right: Text */}
               <div>
-                <h2 className="text-5xl font-serif font-bold text-[hsl(var(--sienna))] mb-4">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[hsl(var(--sienna))] mb-4">
                   Our Story
                 </h2>
                 <p className="text-xl italic text-gray-600 mb-6">
@@ -444,7 +444,7 @@ export default function HomePage() {
 
               {/* Right: Promise grid */}
               <div>
-                <h2 className="text-5xl font-serif font-bold mb-4">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold mb-4">
                   The Homespun Promise
                 </h2>
                 <p className="text-xl mb-12 text-[hsl(var(--cream))]">
@@ -487,7 +487,7 @@ export default function HomePage() {
 
           <div className="container mx-auto relative z-10 h-full flex items-center justify-center text-center text-white px-4">
             <div className="max-w-3xl">
-              <h2 className="text-6xl font-serif font-black mb-6 drop-shadow-lg">
+              <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-black mb-6 drop-shadow-lg">
                 Festival Season is Here!
               </h2>
               <p className="text-2xl mb-8 leading-relaxed drop-shadow-md">
@@ -505,16 +505,16 @@ export default function HomePage() {
         </section>
 
         {/* Testimonials - Enhanced */}
-        <section className="bg-white px-4 py-16">
+        <section className="bg-white px-4 py-8 sm:py-12 md:py-16">
           <div className="container mx-auto">
-            <h2 className="text-5xl font-serif font-bold text-[hsl(var(--sienna))] text-center mb-3">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[hsl(var(--sienna))] text-center mb-3">
               Stories from Our Community
             </h2>
             <p className="text-center text-xl text-gray-600 mb-12">
               Join 10,000+ happy customers across India
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
               {testimonials.map((testimonial, index) => (
                 <div
                   key={index}
@@ -545,10 +545,10 @@ export default function HomePage() {
         </section>
 
         {/* Instagram Feed Section */}
-        <section className="bg-gradient-to-br from-[hsl(var(--warm-beige))] to-[hsl(var(--cream))] px-4 py-16">
+        <section className="bg-gradient-to-br from-[hsl(var(--warm-beige))] to-[hsl(var(--cream))] px-4 py-8 sm:py-12 md:py-16">
           <div className="container mx-auto">
             <div className="text-center mb-10">
-              <h2 className="text-5xl font-serif font-bold text-[hsl(var(--sienna))] mb-3">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[hsl(var(--sienna))] mb-3">
                 @homespun.india
               </h2>
               <p className="text-xl text-gray-600">

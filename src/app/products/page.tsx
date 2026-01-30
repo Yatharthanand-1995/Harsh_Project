@@ -155,7 +155,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             </div>
             <div className="relative z-10 container mx-auto h-full flex items-center px-4">
               <div className="max-w-2xl text-white">
-                <h1 className="font-serif text-6xl lg:text-7xl font-black mb-4 drop-shadow-2xl">
+                <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-4 drop-shadow-2xl">
                   Artisan Bakery
                 </h1>
                 <p className="text-xl leading-relaxed drop-shadow-md">
@@ -197,7 +197,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           {/* Page Header - Only show for non-hero categories */}
           {category !== 'bakery' && category !== 'festivals' && (
             <div className="mb-12 text-center">
-              <h1 className="mb-4 font-serif text-5xl font-bold text-[hsl(var(--sienna))]">
+              <h1 className="mb-4 font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-[hsl(var(--sienna))]">
                 {pageTitle}
               </h1>
               <p className="text-lg text-gray-600">
@@ -209,10 +209,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           {/* Filters - Enhanced with gradient background */}
           <div className="bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))] -mx-4 px-4 sm:mx-0 sm:rounded-3xl py-8 mb-8">
             <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 <Link
                   href="/products"
-                  className={`rounded-full px-6 py-3 font-bold transition-all ${
+                  className={`rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold transition-all ${
                     !category
                       ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
                       : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
@@ -222,7 +222,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 </Link>
                 <Link
                   href="/products?category=bakery"
-                  className={`rounded-full px-6 py-3 font-bold transition-all ${
+                  className={`rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold transition-all ${
                     category === 'bakery'
                       ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
                       : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
@@ -232,7 +232,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 </Link>
                 <Link
                   href="/products?category=cakes"
-                  className={`rounded-full px-6 py-3 font-bold transition-all ${
+                  className={`rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold transition-all ${
                     category === 'cakes'
                       ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
                       : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
@@ -242,7 +242,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 </Link>
                 <Link
                   href="/products?category=festivals"
-                  className={`rounded-full px-6 py-3 font-bold transition-all ${
+                  className={`rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold transition-all ${
                     category === 'festivals'
                       ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
                       : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
@@ -252,7 +252,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 </Link>
                 <Link
                   href="/products?category=frozen"
-                  className={`rounded-full px-6 py-3 font-bold transition-all ${
+                  className={`rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold transition-all ${
                     category === 'frozen'
                       ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
                       : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
@@ -355,11 +355,11 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     Featured {category === 'bakery' ? 'Baked Goods' : category === 'festivals' ? 'Festival Gifts' : 'Products'}
                   </h2>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[250px]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 auto-rows-[180px] sm:auto-rows-[220px] md:auto-rows-[250px]">
                     {/* First product - Large (2x2) */}
                     <Link
                       href={`/products/${p1.slug}`}
-                      className="col-span-2 row-span-2 group relative overflow-hidden rounded-3xl"
+                      className="col-span-1 sm:col-span-2 row-span-1 sm:row-span-2 group relative overflow-hidden rounded-3xl"
                     >
                       <Image
                         src={p1.thumbnail}
@@ -433,7 +433,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     {/* Product 4 - Tall (1x2) */}
                     <Link
                       href={`/products/${p4.slug}`}
-                      className="col-span-1 row-span-2 group relative overflow-hidden rounded-3xl"
+                      className="col-span-1 row-span-1 sm:row-span-2 group relative overflow-hidden rounded-3xl"
                     >
                       <Image
                         src={p4.thumbnail}
@@ -513,7 +513,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   {filteredProducts.length >= 6 ? 'All Products' : 'Our Products'}
                 </h2>
 
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {filteredProducts.slice(filteredProducts.length >= 6 ? 6 : 0).map((product) => (
                     <Link
                       key={product.id}
@@ -610,14 +610,14 @@ function ProductGridSkeleton() {
       {/* Featured Products Bento Skeleton */}
       <div className="mb-16">
         <div className="h-10 w-64 animate-pulse rounded bg-gray-200 mb-8" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[250px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 auto-rows-[180px] sm:auto-rows-[220px] md:auto-rows-[250px]">
           {/* Large featured */}
-          <div className="col-span-2 row-span-2 bg-gray-200 rounded-3xl animate-pulse" />
+          <div className="col-span-1 sm:col-span-2 row-span-1 sm:row-span-2 bg-gray-200 rounded-3xl animate-pulse" />
           {/* Two standard */}
           <div className="col-span-1 row-span-1 bg-gray-200 rounded-3xl animate-pulse" />
           <div className="col-span-1 row-span-1 bg-gray-200 rounded-3xl animate-pulse" />
           {/* Tall */}
-          <div className="col-span-1 row-span-2 bg-gray-200 rounded-3xl animate-pulse" />
+          <div className="col-span-1 row-span-1 sm:row-span-2 bg-gray-200 rounded-3xl animate-pulse" />
           {/* Wide */}
           <div className="col-span-2 row-span-1 bg-gray-200 rounded-3xl animate-pulse" />
           {/* Standard */}
@@ -627,7 +627,7 @@ function ProductGridSkeleton() {
 
       {/* Standard Grid Skeleton */}
       <div className="h-8 w-48 animate-pulse rounded bg-gray-200 mb-8" />
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="overflow-hidden">
             <div className="h-80 animate-pulse bg-gray-200 rounded-2xl mb-4" />
