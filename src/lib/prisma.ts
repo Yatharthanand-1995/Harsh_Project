@@ -8,41 +8,18 @@ const globalForPrisma = globalThis as unknown as {
   pool: Pool | undefined
 }
 
-// For Prisma Postgres URLs, extract the actual database URL from the API key
-function getDatabaseUrl() {
+// Create connection pool
+if (!globalForPrisma.pool) {
   const url = process.env.DATABASE_URL
   if (!url) {
     logger.error({}, 'DATABASE_URL is not set')
     throw new Error('DATABASE_URL is not set')
   }
 
-  // If it's a Prisma Postgres URL, we need to decode the API key
-  if (url.startsWith('prisma+postgres://')) {
-    try {
-      const apiKeyMatch = url.match(/api_key=([^&]+)/)
-      if (apiKeyMatch && apiKeyMatch[1]) {
-        const apiKey = apiKeyMatch[1]
-        const decoded = JSON.parse(Buffer.from(apiKey, 'base64').toString())
-        logger.info('Using decoded Prisma Postgres URL')
-        return decoded.databaseUrl
-      }
-    } catch (e) {
-      logger.error(e instanceof Error ? e : { error: String(e) }, 'Failed to parse Prisma Postgres URL')
-      // Fall back to the original URL
-      return url
-    }
-  }
-
-  logger.info('Using standard DATABASE_URL')
-  return url
-}
-
-// Create connection pool
-if (!globalForPrisma.pool) {
-  const dbUrl = getDatabaseUrl()
   logger.info('Creating Prisma connection pool')
   globalForPrisma.pool = new Pool({
-    connectionString: dbUrl,
+    connectionString: url,
+    max: 1, // Recommended for Vercel serverless functions
   })
 }
 
@@ -58,4 +35,4 @@ export const prisma =
         : ['error'],
   })
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+globalForPrisma.prisma = prisma
