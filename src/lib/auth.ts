@@ -1,6 +1,5 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { Role } from '@prisma/client'
@@ -31,6 +30,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       authorize: async (credentials) => {
         try {
           const { email, password } = loginSchema.parse(credentials)
+
+          // Lazy-load Prisma to avoid bundling pg adapter in Edge Runtime (middleware)
+          const { prisma } = await import('./prisma')
 
           const user = await prisma.user.findUnique({
             where: { email },
