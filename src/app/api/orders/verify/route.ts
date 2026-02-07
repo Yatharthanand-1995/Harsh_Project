@@ -61,14 +61,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingOrder) {
-      logger.error(
-        'Duplicate UPI transaction ID detected',
-        {
-          orderId: order.id,
-          upiTransactionId,
-          userId: session.user.id
-        }
-      );
+      logger.error({
+        orderId: order.id,
+        upiTransactionId,
+        userId: session.user.id
+      }, 'Duplicate UPI transaction ID detected');
       return badRequestResponse('This transaction ID has already been used for another order');
     }
 
@@ -105,14 +102,11 @@ export async function POST(request: NextRequest) {
       return updated;
     });
 
-    logger.info(
-      'UPI payment details submitted',
-      {
-        orderId: updatedOrder.id,
-        upiTransactionId,
-        userId: session.user.id
-      }
-    );
+    logger.info('UPI payment details submitted', {
+      orderId: updatedOrder.id,
+      upiTransactionId,
+      userId: session.user.id,
+    });
 
     // TODO: Send order confirmation email
     // await sendOrderConfirmationEmail(updatedOrder);
@@ -135,7 +129,7 @@ export async function POST(request: NextRequest) {
       return errorResponse(error, 'Invalid payment verification data');
     }
 
-    logger.error('Error submitting payment details', { error });
+    logger.error({ error }, 'Error submitting payment details');
     return errorResponse(error, 'Failed to submit payment details');
   }
 }
