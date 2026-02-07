@@ -19,6 +19,7 @@ const createOrderSchema = z.object({
   deliveryNotes: z.string().max(500).optional(),
   giftMessage: z.string().max(200).optional(),
   isGift: z.boolean().default(false),
+  idempotencyKey: z.string().min(16).max(128).optional(), // Client-generated unique key
 });
 
 /**
@@ -36,6 +37,50 @@ export async function POST(request: NextRequest) {
     // Parse and validate request body
     const body = await request.json();
     const validatedData = createOrderSchema.parse(body);
+
+    // Check for idempotency - prevent duplicate orders
+    if (validatedData.idempotencyKey) {
+      const existingOrder = await prisma.order.findUnique({
+        where: {
+          idempotencyKey: validatedData.idempotencyKey,
+        },
+        include: {
+          items: {
+            include: {
+              product: {
+                select: {
+                  name: true,
+                  thumbnail: true,
+                },
+              },
+            },
+          },
+          deliveryAddress: true,
+        },
+      });
+
+      if (existingOrder) {
+        logger.info(
+          'Idempotent request: returning existing order',
+          { orderId: existingOrder.id, idempotencyKey: validatedData.idempotencyKey }
+        );
+        return NextResponse.json({
+          success: true,
+          order: {
+            id: existingOrder.id,
+            orderNumber: existingOrder.orderNumber,
+            total: existingOrder.total,
+            status: existingOrder.status,
+            paymentStatus: existingOrder.paymentStatus,
+            items: existingOrder.items,
+            address: existingOrder.deliveryAddress,
+            deliverySlot: existingOrder.deliverySlot,
+            deliveryDate: existingOrder.deliveryDate,
+          },
+          idempotent: true,
+        });
+      }
+    }
 
     // Fetch cart items with product details
     const cartItems = await prisma.cartItem.findMany({
@@ -108,6 +153,7 @@ export async function POST(request: NextRequest) {
           ...(validatedData.deliveryNotes && { deliveryNotes: validatedData.deliveryNotes }),
           ...(validatedData.giftMessage && { giftMessage: validatedData.giftMessage }),
           isGift: validatedData.isGift,
+          ...(validatedData.idempotencyKey && { idempotencyKey: validatedData.idempotencyKey }),
           subtotal,
           deliveryFee,
           tax,

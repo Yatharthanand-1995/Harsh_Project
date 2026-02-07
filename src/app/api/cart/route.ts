@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/logger'
+import { validateCsrfMiddleware } from '@/lib/csrf'
 import { z } from 'zod'
 
 const addToCartSchema = z.object({
@@ -70,6 +71,15 @@ export async function GET() {
 // POST /api/cart - Add item to cart or update quantity
 export async function POST(request: NextRequest) {
   try {
+    // Validate CSRF token
+    const csrfCheck = await validateCsrfMiddleware(request)
+    if (!csrfCheck.valid) {
+      return NextResponse.json(
+        { error: csrfCheck.error },
+        { status: 403 }
+      )
+    }
+
     const session = await auth()
 
     if (!session?.user?.id) {

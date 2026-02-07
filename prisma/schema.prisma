@@ -193,6 +193,9 @@ model Order {
   trackingNumber String?
   courierPartner String?
 
+  // Idempotency key to prevent duplicate order creation
+  idempotencyKey String? @unique
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   paidAt    DateTime?
@@ -203,6 +206,7 @@ model Order {
   @@index([createdAt])
   @@index([userId, createdAt])
   @@index([status, createdAt])
+  @@index([idempotencyKey])
 }
 
 model OrderItem {

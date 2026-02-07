@@ -2,27 +2,29 @@
 
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { AddressSelector } from '@/components/address-selector'
+import { AddressForm } from '@/components/address-form'
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Calendar, Clock, MapPin, CreditCard, Truck } from 'lucide-react'
+import { Calendar, Clock, CreditCard, Truck } from 'lucide-react'
 import { useCartStore } from '@/lib/stores/cart-store'
 import { PRICING } from '@/lib/constants'
+import { toast } from 'sonner'
+
+// Generate a unique idempotency key for this checkout session
+function generateIdempotencyKey(): string {
+  return `checkout_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
+}
 
 export default function CheckoutPage() {
   const router = useRouter()
   const { cart, fetchCart, isLoading } = useCartStore()
   const [step, setStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [idempotencyKey] = useState(() => generateIdempotencyKey())
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
+  const [showAddressForm, setShowAddressForm] = useState(false)
   const [formData, setFormData] = useState({
-    // Address
-    name: '',
-    phone: '',
-    email: '',
-    street: '',
-    city: '',
-    state: '',
-    pincode: '',
-    // Delivery
     deliveryDate: '',
     deliverySlot: 'morning',
     deliveryNotes: '',
@@ -60,40 +62,71 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Validate step 1 - address selection
+    if (step === 1 && !selectedAddressId) {
+      toast.error('Please select a delivery address')
+      return
+    }
+
     if (step < 3) {
       setStep(step + 1)
     } else {
-      // Process payment on step 3
       await handlePayment()
     }
   }
 
+  const handleAddressSubmit = async (addressData: any) => {
+    try {
+      const response = await fetch('/api/addresses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(addressData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save address')
+      }
+
+      const { address } = await response.json()
+      setSelectedAddressId(address.id)
+      setShowAddressForm(false)
+      toast.success('Address saved successfully')
+    } catch (error) {
+      toast.error('Failed to save address. Please try again.')
+    }
+  }
+
   const handlePayment = async () => {
+    if (!selectedAddressId) {
+      toast.error('Please select a delivery address')
+      setStep(1)
+      return
+    }
+
     setIsProcessing(true)
 
     try {
-      // TODO: First, save address if it's a new address
-      // For now, we'll assume the address exists or create it inline
-
-      // Create order
+      // Create order with idempotency key
       const orderResponse = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          addressId: 'temp-address-id', // TODO: Implement address management
+          addressId: selectedAddressId,
           deliverySlot: formData.deliverySlot,
           deliveryDate: formData.deliveryDate,
           deliveryNotes: formData.deliveryNotes,
           giftMessage: formData.giftMessage,
           isGift: formData.isGift,
+          idempotencyKey,
         }),
       })
 
       if (!orderResponse.ok) {
-        throw new Error('Failed to create order')
+        const error = await orderResponse.json()
+        throw new Error(error.error || 'Failed to create order')
       }
 
-      const { order, razorpayOrderId } = await orderResponse.json()
+      const { order } = await orderResponse.json()
 
       // Initialize Razorpay payment
       const options = {
@@ -102,30 +135,29 @@ export default function CheckoutPage() {
         currency: 'INR',
         name: 'Homespun',
         description: `Order #${order.orderNumber}`,
-        order_id: razorpayOrderId,
         handler: async function (response: any) {
-          // Verify payment
-          const verifyResponse = await fetch('/api/orders/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              orderId: order.orderNumber,
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-            }),
-          })
+          try {
+            // Verify payment
+            const verifyResponse = await fetch('/api/orders/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId: order.orderNumber,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              }),
+            })
 
-          if (verifyResponse.ok) {
-            router.push(`/orders/${order.id}?success=true`)
-          } else {
-            alert('Payment verification failed. Please contact support.')
+            if (verifyResponse.ok) {
+              toast.success('Payment successful!')
+              router.push(`/orders?success=true`)
+            } else {
+              toast.error('Payment verification failed. Please contact support.')
+            }
+          } catch (error) {
+            toast.error('Payment verification failed. Please contact support.')
           }
-        },
-        prefill: {
-          name: formData.name,
-          email: formData.email,
-          contact: formData.phone,
         },
         theme: {
           color: '#8B4513',
@@ -134,9 +166,8 @@ export default function CheckoutPage() {
 
       const razorpay = new (window as any).Razorpay(options)
       razorpay.open()
-    } catch (error) {
-      // Error handling: payment flow interrupted
-      alert('Failed to process payment. Please try again.')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to process payment. Please try again.')
     } finally {
       setIsProcessing(false)
     }
@@ -222,132 +253,17 @@ export default function CheckoutPage() {
             <div className="lg:col-span-2">
               <form onSubmit={handleSubmit}>
                 <div className="rounded-2xl bg-white p-8 shadow-lg">
-                  {/* Step 1: Address */}
+                  {/* Step 1: Address Selection */}
                   {step === 1 && (
                     <div>
-                      <div className="mb-6 flex items-center gap-3">
-                        <MapPin className="h-8 w-8 text-[hsl(var(--sienna))]" />
-                        <h2 className="font-serif text-3xl font-bold text-[hsl(var(--sienna))]">
-                          Delivery Address
-                        </h2>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                          <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                              Full Name *
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={formData.name}
-                              onChange={(e) =>
-                                setFormData({ ...formData, name: e.target.value })
-                              }
-                              className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
-                              placeholder="John Doe"
-                            />
-                          </div>
-                          <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                              Phone Number *
-                            </label>
-                            <input
-                              type="tel"
-                              required
-                              pattern="[0-9]{10}"
-                              value={formData.phone}
-                              onChange={(e) =>
-                                setFormData({ ...formData, phone: e.target.value })
-                              }
-                              className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
-                              placeholder="9876543210"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="mb-2 block text-sm font-semibold text-gray-700">
-                            Email Address *
-                          </label>
-                          <input
-                            type="email"
-                            required
-                            value={formData.email}
-                            onChange={(e) =>
-                              setFormData({ ...formData, email: e.target.value })
-                            }
-                            className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
-                            placeholder="john@example.com"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="mb-2 block text-sm font-semibold text-gray-700">
-                            Street Address *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={formData.street}
-                            onChange={(e) =>
-                              setFormData({ ...formData, street: e.target.value })
-                            }
-                            className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
-                            placeholder="123 Main Street, Apartment 4B"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                          <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                              City *
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={formData.city}
-                              onChange={(e) =>
-                                setFormData({ ...formData, city: e.target.value })
-                              }
-                              className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
-                              placeholder="Mumbai"
-                            />
-                          </div>
-                          <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                              State *
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={formData.state}
-                              onChange={(e) =>
-                                setFormData({ ...formData, state: e.target.value })
-                              }
-                              className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
-                              placeholder="Maharashtra"
-                            />
-                          </div>
-                          <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                              Pincode *
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              pattern="[0-9]{6}"
-                              value={formData.pincode}
-                              onChange={(e) =>
-                                setFormData({ ...formData, pincode: e.target.value })
-                              }
-                              className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
-                              placeholder="400001"
-                            />
-                          </div>
-                        </div>
-                      </div>
+                      <h2 className="mb-6 font-serif text-3xl font-bold text-[hsl(var(--sienna))]">
+                        Select Delivery Address
+                      </h2>
+                      <AddressSelector
+                        selectedAddressId={selectedAddressId}
+                        onAddressSelect={setSelectedAddressId}
+                        onAddAddress={() => setShowAddressForm(true)}
+                      />
                     </div>
                   )}
 
@@ -374,7 +290,7 @@ export default function CheckoutPage() {
                             onChange={(e) =>
                               setFormData({ ...formData, deliveryDate: e.target.value })
                             }
-                            className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
                           />
                         </div>
 
@@ -431,7 +347,7 @@ export default function CheckoutPage() {
                               setFormData({ ...formData, deliveryNotes: e.target.value })
                             }
                             rows={3}
-                            className="w-full rounded-lg border-2 border-gray-300 px-3 sm:px-4 py-3.5 sm:py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                            className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
                             placeholder="Any special instructions for delivery..."
                           />
                         </div>
@@ -604,6 +520,14 @@ export default function CheckoutPage() {
         </div>
       </main>
       <Footer />
+
+      {/* Address Form Modal */}
+      {showAddressForm && (
+        <AddressForm
+          onSubmit={handleAddressSubmit}
+          onCancel={() => setShowAddressForm(false)}
+        />
+      )}
     </>
   )
 }
