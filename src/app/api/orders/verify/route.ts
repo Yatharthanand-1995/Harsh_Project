@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { verifyPaymentSignature } from '@/lib/razorpay';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
 import {
@@ -11,35 +10,35 @@ import {
   successResponse,
 } from '@/lib/api-response';
 
-// Validation schema for payment verification
+// Validation schema for UPI payment verification
 const verifyPaymentSchema = z.object({
   orderId: z.string().min(1, 'Order ID is required'),
-  razorpayOrderId: z.string().min(1, 'Razorpay order ID is required'),
-  razorpayPaymentId: z.string().min(1, 'Razorpay payment ID is required'),
-  razorpaySignature: z.string().min(1, 'Payment signature is required'),
+  upiTransactionId: z.string().min(12, 'Valid UPI Transaction ID is required').max(50),
 });
 
 /**
  * POST /api/orders/verify
- * Verifies Razorpay payment signature and updates order status
+ * Submits UPI transaction ID for payment verification
  */
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
     const session = await auth();
     if (!session?.user?.id) {
-      return unauthorizedResponse('Please sign in to verify payment');
+      return unauthorizedResponse('Please sign in to submit payment details');
     }
 
     // Parse and validate request body
     const body = await request.json();
-    const { orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature } =
-      verifyPaymentSchema.parse(body);
+    const { orderId, upiTransactionId } = verifyPaymentSchema.parse(body);
 
-    // Find the order
+    // Find the order - orderId can be either the order ID or order number
     const order = await prisma.order.findFirst({
       where: {
-        orderNumber: orderId,
+        OR: [
+          { id: orderId },
+          { orderNumber: orderId },
+        ],
         userId: session.user.id,
       },
     });
@@ -53,34 +52,34 @@ export async function POST(request: NextRequest) {
       return badRequestResponse('Order is already paid');
     }
 
-    // Verify payment signature
-    const isValid = verifyPaymentSignature(
-      razorpayOrderId,
-      razorpayPaymentId,
-      razorpaySignature
-    );
+    // Check for duplicate UPI transaction ID
+    const existingOrder = await prisma.order.findFirst({
+      where: {
+        paymentId: upiTransactionId,
+        id: { not: order.id },
+      },
+    });
 
-    if (!isValid) {
-      // Log failed verification attempt
-      logger.error({
-        orderId,
-        razorpayOrderId,
-        razorpayPaymentId,
-        userId: session.user.id,
-      }, 'Payment verification failed');
-
-      return badRequestResponse('Invalid payment signature');
+    if (existingOrder) {
+      logger.error(
+        'Duplicate UPI transaction ID detected',
+        {
+          orderId: order.id,
+          upiTransactionId,
+          userId: session.user.id
+        }
+      );
+      return badRequestResponse('This transaction ID has already been used for another order');
     }
 
     // Update order in a transaction
     const updatedOrder = await prisma.$transaction(async (tx) => {
-      // Update order status
+      // Update order with UPI transaction ID
       const updated = await tx.order.update({
         where: { id: order.id },
         data: {
-          paymentId: razorpayPaymentId,
-          paymentStatus: 'PAID',
-          status: 'CONFIRMED',
+          paymentId: upiTransactionId,
+          paymentStatus: 'PENDING', // Will be verified by admin
           paidAt: new Date(),
         },
         include: {
@@ -98,7 +97,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Clear user's cart after successful payment
+      // Clear user's cart after payment submission
       await tx.cartItem.deleteMany({
         where: { userId: session.user.id },
       });
@@ -106,12 +105,21 @@ export async function POST(request: NextRequest) {
       return updated;
     });
 
+    logger.info(
+      'UPI payment details submitted',
+      {
+        orderId: updatedOrder.id,
+        upiTransactionId,
+        userId: session.user.id
+      }
+    );
+
     // TODO: Send order confirmation email
     // await sendOrderConfirmationEmail(updatedOrder);
 
     return successResponse({
       success: true,
-      message: 'Payment verified successfully',
+      message: 'Payment details submitted successfully. Your order will be processed once verified.',
       order: {
         id: updatedOrder.id,
         orderNumber: updatedOrder.orderNumber,
@@ -127,7 +135,7 @@ export async function POST(request: NextRequest) {
       return errorResponse(error, 'Invalid payment verification data');
     }
 
-    logger.error({ error }, 'Error verifying payment');
-    return errorResponse(error, 'Failed to verify payment');
+    logger.error('Error submitting payment details', { error });
+    return errorResponse(error, 'Failed to submit payment details');
   }
 }

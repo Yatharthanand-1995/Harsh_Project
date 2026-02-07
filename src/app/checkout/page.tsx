@@ -11,6 +11,8 @@ import { useCartStore } from '@/lib/stores/cart-store'
 import { PRICING } from '@/lib/constants'
 import { toast } from 'sonner'
 import { fetchWithCsrf } from '@/lib/client-csrf'
+import { PAYMENT_CONFIG, generateUpiPaymentLink } from '@/lib/payment-config'
+import Image from 'next/image'
 
 // Generate a unique idempotency key for this checkout session
 function generateIdempotencyKey(): string {
@@ -31,7 +33,10 @@ export default function CheckoutPage() {
     deliveryNotes: '',
     giftMessage: '',
     isGift: false,
+    upiTransactionId: '',
   })
+  const [orderCreated, setOrderCreated] = useState<any>(null)
+  const [showPaymentDetails, setShowPaymentDetails] = useState(false)
 
   // Fetch cart on mount
   useEffect(() => {
@@ -129,46 +134,44 @@ export default function CheckoutPage() {
 
       const { order } = await orderResponse.json()
 
-      // Initialize Razorpay payment
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: order.total * 100,
-        currency: 'INR',
-        name: 'Homespun',
-        description: `Order #${order.orderNumber}`,
-        handler: async function (response: any) {
-          try {
-            // Verify payment
-            const verifyResponse = await fetchWithCsrf('/api/orders/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                orderId: order.orderNumber,
-                razorpayOrderId: response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
-              }),
-            })
-
-            if (verifyResponse.ok) {
-              toast.success('Payment successful!')
-              router.push(`/orders?success=true`)
-            } else {
-              toast.error('Payment verification failed. Please contact support.')
-            }
-          } catch (error) {
-            toast.error('Payment verification failed. Please contact support.')
-          }
-        },
-        theme: {
-          color: '#8B4513',
-        },
-      }
-
-      const razorpay = new (window as any).Razorpay(options)
-      razorpay.open()
+      // Store order and show payment details
+      setOrderCreated(order)
+      setShowPaymentDetails(true)
+      toast.success('Order created! Please complete the payment.')
     } catch (error: any) {
-      toast.error(error.message || 'Failed to process payment. Please try again.')
+      toast.error(error.message || 'Failed to create order. Please try again.')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handlePaymentConfirmation = async () => {
+    if (!formData.upiTransactionId.trim()) {
+      toast.error('Please enter the UPI Transaction ID')
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      // Submit transaction ID to verify payment
+      const verifyResponse = await fetchWithCsrf('/api/orders/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: orderCreated.id,
+          upiTransactionId: formData.upiTransactionId,
+        }),
+      })
+
+      if (verifyResponse.ok) {
+        toast.success('Payment details submitted! Your order is being processed.')
+        router.push(`/orders?success=true`)
+      } else {
+        const error = await verifyResponse.json()
+        toast.error(error.error || 'Failed to submit payment details. Please contact support.')
+      }
+    } catch (error) {
+      toast.error('Failed to submit payment details. Please contact support.')
     } finally {
       setIsProcessing(false)
     }
@@ -401,39 +404,32 @@ export default function CheckoutPage() {
                       </div>
 
                       <div className="space-y-4">
-                        {[
-                          { id: 'razorpay', name: 'Cards / UPI / Wallets', icon: '💳' },
-                          { id: 'cod', name: 'Cash on Delivery', icon: '💵' },
-                        ].map((method) => (
-                          <label
-                            key={method.id}
-                            className="flex cursor-pointer items-center gap-4 rounded-xl border-2 border-gray-300 p-6 transition-all hover:border-[hsl(var(--sienna))] hover:bg-[hsl(var(--cream))]"
-                          >
-                            <input
-                              type="radio"
-                              name="payment"
-                              defaultChecked={method.id === 'razorpay'}
-                              className="h-5 w-5"
-                            />
-                            <div className="flex flex-1 items-center gap-3">
-                              <span className="text-4xl">{method.icon}</span>
-                              <span className="font-semibold text-gray-800">
-                                {method.name}
+                        <div className="rounded-xl border-2 border-[hsl(var(--sienna))] bg-[hsl(var(--cream))] p-6">
+                          <div className="flex items-center gap-4">
+                            <span className="text-4xl">📱</span>
+                            <div className="flex-1">
+                              <span className="font-semibold text-gray-800 text-lg">
+                                UPI Payment
                               </span>
+                              <p className="text-sm text-gray-600 mt-1">
+                                Pay using Google Pay, PhonePe, Paytm or any UPI app
+                              </p>
                             </div>
-                          </label>
-                        ))}
+                          </div>
+                        </div>
                       </div>
 
                       <div className="mt-6 rounded-xl bg-blue-50 p-6">
                         <div className="mb-3 flex items-center gap-2">
-                          <div className="text-3xl">🔒</div>
-                          <h3 className="font-bold text-blue-900">Secure Payment</h3>
+                          <div className="text-3xl">💡</div>
+                          <h3 className="font-bold text-blue-900">How it works</h3>
                         </div>
-                        <p className="text-sm text-blue-800">
-                          Your payment information is encrypted and secure. We never
-                          store your card details.
-                        </p>
+                        <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
+                          <li>Click "Place Order" to create your order</li>
+                          <li>Scan the QR code or use the UPI ID to pay</li>
+                          <li>Enter your UPI Transaction ID to confirm</li>
+                          <li>We'll process your order once payment is verified</li>
+                        </ol>
                       </div>
                     </div>
                   )}
@@ -528,6 +524,157 @@ export default function CheckoutPage() {
           onSubmit={handleAddressSubmit}
           onCancel={() => setShowAddressForm(false)}
         />
+      )}
+
+      {/* UPI Payment Details Modal */}
+      {showPaymentDetails && orderCreated && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-8 shadow-2xl">
+            <div className="text-center mb-6">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                <span className="text-4xl">✅</span>
+              </div>
+              <h2 className="font-serif text-3xl font-bold text-[hsl(var(--sienna))] mb-2">
+                Order Created Successfully!
+              </h2>
+              <p className="text-gray-600">
+                Order #{orderCreated.orderNumber}
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {/* Order Total */}
+              <div className="rounded-xl bg-[hsl(var(--cream))] p-6 text-center">
+                <p className="text-sm text-gray-600 mb-2">Amount to Pay</p>
+                <p className="font-serif text-4xl font-bold text-[hsl(var(--sienna))]">
+                  ₹{orderCreated.total}
+                </p>
+              </div>
+
+              {/* UPI Payment Details */}
+              <div className="rounded-xl border-2 border-[hsl(var(--sienna))] p-6">
+                <h3 className="font-bold text-lg mb-4 text-center">
+                  📱 Pay Using UPI
+                </h3>
+
+                {/* QR Code */}
+                {PAYMENT_CONFIG.SHOW_QR_CODE && (
+                  <div className="mb-6 flex justify-center">
+                    <div className="rounded-xl border-2 border-gray-300 p-4 bg-white">
+                      <Image
+                        src={PAYMENT_CONFIG.QR_CODE_PATH}
+                        alt="UPI QR Code"
+                        width={192}
+                        height={192}
+                        className="w-48 h-48 rounded-lg"
+                        onError={(e) => {
+                          // Fallback if QR code image not found
+                          const target = e.target as HTMLImageElement
+                          target.style.display = 'none'
+                          if (target.nextElementSibling) {
+                            target.nextElementSibling.classList.remove('hidden')
+                          }
+                        }}
+                      />
+                      <div className="hidden w-48 h-48 bg-gray-100 flex items-center justify-center rounded-lg">
+                        <div className="text-center text-gray-500 p-4">
+                          <p className="text-sm mb-2">QR Code</p>
+                          <p className="text-xs">
+                            Add your QR code image to<br/>
+                            <code className="bg-gray-200 px-1 rounded">public/upi-qr.png</code>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* UPI ID */}
+                <div className="mb-6">
+                  <p className="text-sm text-gray-600 text-center mb-2">
+                    {PAYMENT_CONFIG.SHOW_QR_CODE ? 'Or pay using UPI ID' : 'Pay using UPI ID'}
+                  </p>
+                  <div className="rounded-lg bg-gray-50 p-4 text-center">
+                    <p className="font-mono font-bold text-lg text-[hsl(var(--sienna))]">
+                      {PAYMENT_CONFIG.UPI_ID}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(PAYMENT_CONFIG.UPI_ID)
+                        toast.success('UPI ID copied!')
+                      }}
+                      className="mt-2 text-xs text-blue-600 hover:text-blue-800"
+                    >
+                      Click to copy
+                    </button>
+                  </div>
+                </div>
+
+                {/* Payment Instructions */}
+                <div className="mb-6 rounded-lg bg-blue-50 p-4">
+                  <p className="text-sm font-semibold text-blue-900 mb-2">Instructions:</p>
+                  <ol className="text-xs text-blue-800 space-y-1 list-decimal list-inside">
+                    {PAYMENT_CONFIG.PAYMENT_INSTRUCTIONS.map((instruction, idx) => (
+                      <li key={idx}>{instruction}</li>
+                    ))}
+                  </ol>
+                </div>
+
+                {/* Transaction ID Input */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    UPI Transaction ID / UTR Number *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.upiTransactionId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, upiTransactionId: e.target.value })
+                    }
+                    placeholder="Enter 12-digit transaction ID"
+                    className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    You can find this in your payment app after completing the transaction
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className={`flex gap-4 ${PAYMENT_CONFIG.ALLOW_PAY_LATER ? '' : 'justify-center'}`}>
+                {PAYMENT_CONFIG.ALLOW_PAY_LATER && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPaymentDetails(false)
+                      router.push('/orders')
+                    }}
+                    className="flex-1 rounded-full border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition-all hover:bg-gray-50"
+                  >
+                    Pay Later
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handlePaymentConfirmation}
+                  disabled={isProcessing || !formData.upiTransactionId.trim()}
+                  className={`${PAYMENT_CONFIG.ALLOW_PAY_LATER ? 'flex-1' : 'w-full'} rounded-full bg-[hsl(var(--saffron))] px-6 py-3 font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0`}
+                >
+                  {isProcessing ? 'Confirming...' : 'Confirm Payment'}
+                </button>
+              </div>
+
+              <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-4">
+                <p className="text-sm text-yellow-800">
+                  <strong>Note:</strong> Your order will be processed once we verify your payment.
+                  You can also submit the transaction ID later from your orders page.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   )
