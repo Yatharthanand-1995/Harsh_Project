@@ -10,6 +10,7 @@ import { Calendar, Clock, CreditCard, Truck } from 'lucide-react'
 import { useCartStore } from '@/lib/stores/cart-store'
 import { PRICING } from '@/lib/constants'
 import { toast } from 'sonner'
+import { fetchWithCsrf } from '@/lib/client-csrf'
 
 // Generate a unique idempotency key for this checkout session
 function generateIdempotencyKey(): string {
@@ -77,7 +78,7 @@ export default function CheckoutPage() {
 
   const handleAddressSubmit = async (addressData: any) => {
     try {
-      const response = await fetch('/api/addresses', {
+      const response = await fetchWithCsrf('/api/addresses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(addressData),
@@ -107,7 +108,7 @@ export default function CheckoutPage() {
 
     try {
       // Create order with idempotency key
-      const orderResponse = await fetch('/api/orders', {
+      const orderResponse = await fetchWithCsrf('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -138,7 +139,7 @@ export default function CheckoutPage() {
         handler: async function (response: any) {
           try {
             // Verify payment
-            const verifyResponse = await fetch('/api/orders/verify', {
+            const verifyResponse = await fetchWithCsrf('/api/orders/verify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

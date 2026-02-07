@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { debounce } from '@/lib/utils/debounce'
 import { CART } from '@/lib/constants'
+import { fetchWithCsrf } from '@/lib/client-csrf'
 
 interface CartItem {
   id: string
@@ -81,7 +82,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   addToCart: async (productId: string, quantity: number) => {
     set({ isLoading: true, error: null })
     try {
-      const response = await fetch('/api/cart', {
+      const response = await fetchWithCsrf('/api/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +134,7 @@ export const useCartStore = create<CartState>((set, get) => ({
       const debouncedFn = debounce(
         async (id: string, qty: number) => {
           try {
-            const response = await fetch(`/api/cart/${id}`, {
+            const response = await fetchWithCsrf(`/api/cart/${id}`, {
               method: 'PATCH',
               headers: {
                 'Content-Type': 'application/json',
@@ -170,7 +171,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     // For non-optimistic updates (backward compatibility)
     set({ isLoading: true, error: null })
     try {
-      const response = await fetch(`/api/cart/${itemId}`, {
+      const response = await fetchWithCsrf(`/api/cart/${itemId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -223,7 +224,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     })
 
     // Perform actual API call
-    fetch(`/api/cart/${itemId}`, {
+    fetchWithCsrf(`/api/cart/${itemId}`, {
       method: 'DELETE',
     })
       .then(async (response) => {
@@ -249,7 +250,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     // For non-optimistic removes (backward compatibility)
     set({ isLoading: true, error: null })
     try {
-      const response = await fetch(`/api/cart/${itemId}`, {
+      const response = await fetchWithCsrf(`/api/cart/${itemId}`, {
         method: 'DELETE',
       })
 
