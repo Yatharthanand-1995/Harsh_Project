@@ -11,8 +11,7 @@ import { useCartStore } from '@/lib/stores/cart-store'
 import { PRICING } from '@/lib/constants'
 import { toast } from 'sonner'
 import { fetchWithCsrf } from '@/lib/client-csrf'
-import { PAYMENT_CONFIG, generateUpiPaymentLink } from '@/lib/payment-config'
-import Image from 'next/image'
+import { PAYMENT_CONFIG } from '@/lib/payment-config'
 
 // Generate a unique idempotency key for this checkout session
 function generateIdempotencyKey(): string {
@@ -561,27 +560,12 @@ export default function CheckoutPage() {
                 {PAYMENT_CONFIG.SHOW_QR_CODE && (
                   <div className="mb-6 flex justify-center">
                     <div className="rounded-xl border-2 border-gray-300 p-4 bg-white">
-                      <Image
-                        src={PAYMENT_CONFIG.QR_CODE_PATH}
-                        alt="UPI QR Code"
-                        width={192}
-                        height={192}
-                        className="w-48 h-48 rounded-lg"
-                        onError={(e) => {
-                          // Fallback if QR code image not found
-                          const target = e.target as HTMLImageElement
-                          target.style.display = 'none'
-                          if (target.nextElementSibling) {
-                            target.nextElementSibling.classList.remove('hidden')
-                          }
-                        }}
-                      />
-                      <div className="hidden w-48 h-48 bg-gray-100 flex items-center justify-center rounded-lg">
+                      <div className="w-48 h-48 bg-gray-100 flex items-center justify-center rounded-lg">
                         <div className="text-center text-gray-500 p-4">
-                          <p className="text-sm mb-2">QR Code</p>
+                          <p className="text-sm mb-2">📱 QR Code</p>
                           <p className="text-xs">
                             Add your QR code image to<br/>
-                            <code className="bg-gray-200 px-1 rounded">public/upi-qr.png</code>
+                            <code className="bg-gray-200 px-1 rounded text-[10px]">public/upi-qr.png</code>
                           </p>
                         </div>
                       </div>
