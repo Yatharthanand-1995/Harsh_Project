@@ -242,7 +242,7 @@ export default function AddressesPage() {
       {/* Address Form Modal */}
       {showAddressForm && (
         <AddressForm
-          initialData={editingAddress || undefined}
+          {...(editingAddress && { initialData: editingAddress })}
           onSubmit={editingAddress ? handleEditAddress : handleAddAddress}
           onCancel={() => {
             setShowAddressForm(false)
