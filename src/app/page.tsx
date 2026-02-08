@@ -549,7 +549,7 @@ export default function HomePage() {
           <div className="container mx-auto">
             <div className="text-center mb-10">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[hsl(var(--sienna))] mb-3">
-                @homespun.india
+                @homespun_bakery_gifts
               </h2>
               <p className="text-xl text-gray-600">
                 Follow us for daily baking inspiration
@@ -560,7 +560,7 @@ export default function HomePage() {
               {instagramPosts.map((post, index) => (
                 <a
                   key={index}
-                  href={`https://instagram.com/homespun.india`}
+                  href={`https://instagram.com/homespun_bakery_gifts`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="relative aspect-square rounded-2xl overflow-hidden group"
@@ -581,13 +581,13 @@ export default function HomePage() {
 
             <div className="text-center mt-10">
               <a
-                href="https://instagram.com/homespun.india"
+                href="https://instagram.com/homespun_bakery_gifts"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-shadow"
               >
                 <Instagram className="w-6 h-6" />
-                Follow @homespun.india
+                Follow @homespun_bakery_gifts
               </a>
             </div>
           </div>

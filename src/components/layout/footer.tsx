@@ -100,8 +100,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-12 border-t border-white/20 pt-8 text-center">
           <p className="text-white/70">
-            &copy; {new Date().getFullYear()} Homespun. All rights reserved. |
-            FSSAI Licensed | GST Registered
+            &copy; {new Date().getFullYear()} Homespun. All rights reserved. | GST Registered
           </p>
           <p className="mt-2 text-white/70">
             Handcrafted with ❤️ in India
