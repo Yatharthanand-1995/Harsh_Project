@@ -1,4 +1,4 @@
-export type BakeryType = 'baked-goods' | 'ready-to-consume' | 'cakes'
+export type BakeryType = 'baked-goods' | 'ready-to-consume' | 'cakes' | 'chocolates'
 
 export interface Product {
   id: string
@@ -450,7 +450,7 @@ export const PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1606312619070-d48b4cff3e1d?w=1200&h=800&fit=crop',
     ],
     category: 'bakery',
-    bakeryType: 'baked-goods',
+    bakeryType: 'chocolates',
     stock: 30,
     ingredients: 'Belgian dark chocolate, milk chocolate, cream, strawberries, cocoa butter',
     allergens: 'Contains dairy. May contain nuts',
@@ -473,7 +473,7 @@ export const PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=1200&h=800&fit=crop',
     ],
     category: 'bakery',
-    bakeryType: 'baked-goods',
+    bakeryType: 'chocolates',
     stock: 45,
     ingredients: 'Chocolate, cocoa powder, butter, sugar, flour, eggs, cream',
     allergens: 'Contains gluten, dairy, eggs',
@@ -496,7 +496,7 @@ export const PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1606312619070-d48b4cff3e1d?w=1200&h=800&fit=crop',
     ],
     category: 'bakery',
-    bakeryType: 'baked-goods',
+    bakeryType: 'chocolates',
     stock: 38,
     ingredients: 'Dark chocolate, milk chocolate, cream, cocoa powder, hazelnuts, caramel, raspberry, coffee',
     allergens: 'Contains dairy, nuts',
@@ -542,7 +542,7 @@ export const PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-9rx9KicYzE4?w=1200&h=800&fit=crop',
     ],
     category: 'bakery',
-    bakeryType: 'baked-goods',
+    bakeryType: 'chocolates',
     stock: 55,
     ingredients: 'Flour, cocoa powder, chocolate chips, butter, sugar, eggs, vanilla',
     allergens: 'Contains gluten, dairy, eggs',
@@ -565,7 +565,7 @@ export const PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1515037893149-de7f840978e2?w=1200&h=800&fit=crop',
     ],
     category: 'bakery',
-    bakeryType: 'baked-goods',
+    bakeryType: 'chocolates',
     stock: 36,
     ingredients: 'Belgian chocolate, butter, sugar, eggs, flour, cocoa powder',
     allergens: 'Contains gluten, dairy, eggs',
@@ -1241,4 +1241,5 @@ export const BAKERY_TYPE_NAMES: Record<BakeryType, string> = {
   'baked-goods': 'Baked Goods',
   'ready-to-consume': 'Ready to Consume',
   'cakes': 'Cakes',
+  'chocolates': 'Assorted Chocolate',
 }
