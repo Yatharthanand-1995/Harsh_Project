@@ -28,6 +28,9 @@ export async function GET() {
     const cartItems = await prisma.cartItem.findMany({
       where: {
         userId: session.user.id,
+        product: {
+          isActive: true, // Only include active products in cart
+        },
       },
       include: {
         product: {
@@ -40,6 +43,7 @@ export async function GET() {
             stock: true,
             images: true,
             shortDesc: true,
+            isActive: true,
           },
         },
       },

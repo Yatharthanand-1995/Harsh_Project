@@ -4,6 +4,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronDown, Star, Heart, Instagram } from 'lucide-react'
 
+// Force dynamic rendering for fresh content
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // Placeholder images from Unsplash
 const IMAGES = {
   hero: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1920&q=80',

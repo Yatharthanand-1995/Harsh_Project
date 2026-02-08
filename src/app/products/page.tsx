@@ -30,8 +30,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const params = await searchParams
   const { category, search, featured, festival, bakeryType, page } = params
 
-  // Parse page number
-  const currentPage = Math.max(1, parseInt(page || '1', 10))
+  // Parse and validate page number (prevent abuse with max limit)
+  const MAX_PAGE = 1000
+  const pageNum = parseInt(page || '1', 10)
+  const currentPage = Math.max(1, Math.min(pageNum, MAX_PAGE))
   const perPage = PAGINATION.DEFAULT_PAGE_SIZE
 
   // Build Prisma where clause based on filters (type-safe)

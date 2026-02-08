@@ -6,6 +6,10 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 
+// Force dynamic rendering for fresh product data
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface ProductPageProps {
   params: Promise<{
     slug: string
@@ -15,29 +19,36 @@ interface ProductPageProps {
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params
 
-  // Fetch product from database
-  const product = await prisma.product.findUnique({
-    where: {
-      slug,
-      isActive: true,
-    },
-    include: {
-      category: true,
-      reviews: {
-        include: {
-          user: {
-            select: {
-              name: true,
-              email: true,
+  let product
+  try {
+    // Fetch product from database with error handling
+    product = await prisma.product.findUnique({
+      where: {
+        slug,
+        isActive: true,
+      },
+      include: {
+        category: true,
+        reviews: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
             },
           },
-        },
-        orderBy: {
-          createdAt: 'desc',
+          orderBy: {
+            createdAt: 'desc',
+          },
         },
       },
-    },
-  })
+    })
+  } catch (error) {
+    console.error('Error fetching product:', error)
+    // If database error, show not found page
+    notFound()
+  }
 
   if (!product) {
     notFound()
