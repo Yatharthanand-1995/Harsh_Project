@@ -78,7 +78,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     prisma.product.groupBy({
       by: ['categoryId'],
       where: { isActive: true },
-      _count: true,
+      _count: {
+        _all: true,
+      },
     }).then(async (results) => {
       // Get category slugs for the IDs
       const categoryIds = results.map(r => r.categoryId)
@@ -90,10 +92,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       const categoryMap = Object.fromEntries(categories.map(c => [c.id, c.slug]))
 
       return {
-        all: results.reduce((sum, r) => sum + r._count, 0),
-        bakery: results.find(r => categoryMap[r.categoryId] === 'bakery')?._count || 0,
-        hampers: results.find(r => categoryMap[r.categoryId] === 'hampers')?._count || 0,
-        frozen: results.find(r => categoryMap[r.categoryId] === 'frozen')?._count || 0,
+        all: results.reduce((sum, r) => sum + r._count._all, 0),
+        bakery: results.find(r => categoryMap[r.categoryId] === 'bakery')?._count._all || 0,
+        hampers: results.find(r => categoryMap[r.categoryId] === 'hampers')?._count._all || 0,
+        frozen: results.find(r => categoryMap[r.categoryId] === 'frozen')?._count._all || 0,
       }
     }),
 
