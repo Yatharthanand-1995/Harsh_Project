@@ -51,11 +51,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     }),
   }
 
-  // Optimized: Run queries in parallel with a single Promise.all
+  // Optimized: Run all queries in parallel with Promise.all (reduced from 8 to 7 queries)
   const [
     totalCount,
     filteredProducts,
-    categoryCounts,
+    allProductsCount,
+    bakeryCount,
+    hampersCount,
+    frozenCount,
     availableBakeryTypes,
   ] = await Promise.all([
     // Query 1: Get total count for pagination
@@ -74,32 +77,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       take: perPage,
     }),
 
-    // Query 3: Get all category counts in one query using groupBy
-    prisma.product.groupBy({
-      by: ['categoryId'],
-      where: { isActive: true },
-      _count: {
-        _all: true,
-      },
-    }).then(async (results) => {
-      // Get category slugs for the IDs
-      const categoryIds = results.map(r => r.categoryId)
-      const categories = await prisma.category.findMany({
-        where: { id: { in: categoryIds } },
-        select: { id: true, slug: true },
-      })
+    // Query 3-6: Category counts in parallel
+    prisma.product.count({ where: { isActive: true } }),
+    prisma.product.count({ where: { isActive: true, category: { slug: 'bakery', isActive: true } } }),
+    prisma.product.count({ where: { isActive: true, category: { slug: 'hampers', isActive: true } } }),
+    prisma.product.count({ where: { isActive: true, category: { slug: 'frozen', isActive: true } } }),
 
-      const categoryMap = Object.fromEntries(categories.map(c => [c.id, c.slug]))
-
-      return {
-        all: results.reduce((sum, r) => sum + r._count._all, 0),
-        bakery: results.find(r => categoryMap[r.categoryId] === 'bakery')?._count._all || 0,
-        hampers: results.find(r => categoryMap[r.categoryId] === 'hampers')?._count._all || 0,
-        frozen: results.find(r => categoryMap[r.categoryId] === 'frozen')?._count._all || 0,
-      }
-    }),
-
-    // Query 4: Get available bakery types
+    // Query 7: Get available bakery types
     prisma.product.findMany({
       where: {
         isActive: true,
@@ -111,9 +95,6 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       distinct: ['bakeryType'],
     }),
   ])
-
-  // Extract category counts
-  const { all: allProductsCount, bakery: bakeryCount, hampers: hampersCount, frozen: frozenCount } = categoryCounts
 
   // Calculate pagination
   const totalPages = Math.ceil(totalCount / perPage)
