@@ -50,10 +50,10 @@ export function Header() {
           </li>
           <li>
             <Link
-              href="/products?category=festivals"
+              href="/products?category=hampers"
               className="relative text-base font-semibold text-[hsl(var(--cream))] transition-colors after:absolute after:bottom-[-5px] after:left-0 after:h-0.5 after:w-0 after:bg-[hsl(var(--saffron))] after:transition-all hover:after:w-full"
             >
-              Festivals
+              Hampers
             </Link>
           </li>
           {/* <li>
@@ -159,11 +159,11 @@ export function Header() {
             </li>
             <li>
               <Link
-                href="/products?category=festivals"
+                href="/products?category=hampers"
                 className="block py-2 text-base font-semibold text-[hsl(var(--cream))]"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Festivals
+                Hampers
               </Link>
             </li>
             {/* <li>

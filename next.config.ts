@@ -19,6 +19,22 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/products',
+        has: [
+          {
+            type: 'query',
+            key: 'category',
+            value: 'festivals',
+          },
+        ],
+        destination: '/products?category=hampers',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

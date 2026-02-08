@@ -168,10 +168,10 @@ export default function HomePage() {
                   Explore Bakery
                 </Link>
                 <Link
-                  href="/products?category=festivals"
+                  href="/products?category=hampers"
                   className="rounded-full bg-white/20 backdrop-blur-sm border-2 border-white px-8 py-4 font-bold text-white transition-all hover:bg-white hover:text-[hsl(var(--sienna))]"
                 >
-                  Festival Gifts
+                  Gift Hampers
                 </Link>
               </div>
             </div>
@@ -273,21 +273,21 @@ export default function HomePage() {
                 </div>
               </Link>
 
-              {/* Festive Hampers - wide item */}
+              {/* Gift Hampers - wide item */}
               <Link
-                href="/products?category=festivals"
+                href="/products?category=hampers"
                 className="col-span-1 sm:col-span-2 row-span-1 group relative overflow-hidden rounded-3xl"
               >
                 <Image
                   src={IMAGES.diwali}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  alt="Festive Hampers"
+                  alt="Gift Hampers"
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
-                  <h3 className="text-2xl font-serif font-bold">Festive Hampers</h3>
+                  <h3 className="text-2xl font-serif font-bold">Gift Hampers</h3>
                 </div>
               </Link>
 
@@ -471,7 +471,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Festival Banner - Enhanced */}
+        {/* Gift Hampers Banner - Enhanced */}
         <section className="relative h-96 overflow-hidden">
           {/* Background image */}
           <div className="absolute inset-0">
@@ -479,7 +479,7 @@ export default function HomePage() {
               src={IMAGES.festivalBanner}
               fill
               className="object-cover"
-              alt="Festival celebration with diyas and lights"
+              alt="Beautiful gift hampers and celebrations"
               sizes="100vw"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--deep-red))]/90 to-[hsl(var(--saffron))]/80" />
@@ -488,17 +488,17 @@ export default function HomePage() {
           <div className="container mx-auto relative z-10 h-full flex items-center justify-center text-center text-white px-4">
             <div className="max-w-3xl">
               <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-black mb-6 drop-shadow-lg">
-                Festival Season is Here!
+                Thoughtfully Curated Gift Sets
               </h2>
               <p className="text-2xl mb-8 leading-relaxed drop-shadow-md">
-                Celebrate India&apos;s rich traditions with our curated festive
-                collections. Make every festival memorable.
+                Celebrate life&apos;s special moments with our curated gift hampers.
+                Perfect for any occasion.
               </p>
               <Link
-                href="/products?category=festivals"
+                href="/products?category=hampers"
                 className="inline-block bg-white text-[hsl(var(--saffron))] px-10 py-4 rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-2xl active:scale-95"
               >
-                Browse Festival Gifts
+                Browse Gift Hampers
               </Link>
             </div>
           </div>

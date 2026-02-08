@@ -1,7 +1,19 @@
 import 'dotenv/config'
-import { prisma } from '../src/lib/prisma'
+import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool } from 'pg'
 import bcrypt from 'bcryptjs'
 import { PRODUCTS } from '../src/data/products'
+
+// Use direct PostgreSQL connection for seeding (bypassing Prisma Accelerate proxy)
+const directUrl = 'postgresql://yatharthanand@localhost:5432/template1?sslmode=disable&connection_limit=1'
+
+const pool = new Pool({
+  connectionString: directUrl,
+})
+
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
   console.log('🌱 Starting database seed...')
@@ -32,12 +44,12 @@ async function main() {
       },
     }),
     prisma.category.upsert({
-      where: { slug: 'festivals' },
+      where: { slug: 'hampers' },
       update: {},
       create: {
-        name: 'Festival Gifts',
-        slug: 'festivals',
-        description: 'Special gift hampers for festivals and celebrations',
+        name: 'Hamper & Gift Sets',
+        slug: 'hampers',
+        description: 'Curated gift hampers perfect for any occasion',
         order: 3,
         isActive: true,
       },

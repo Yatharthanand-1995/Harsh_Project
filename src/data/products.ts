@@ -1,15 +1,3 @@
-export type FestivalType =
-  | 'diwali'
-  | 'christmas'
-  | 'holi'
-  | 'raksha-bandhan'
-  | 'eid'
-  | 'new-year'
-  | 'ganesh-chaturthi'
-  | 'navratri'
-  | 'pongal'
-  | 'onam'
-
 export type BakeryType = 'baked-goods' | 'ready-to-consume'
 
 export interface Product {
@@ -22,8 +10,7 @@ export interface Product {
   shortDesc: string
   thumbnail: string
   images: string[]
-  category: 'bakery' | 'festivals' | 'corporate' | 'cakes' | 'frozen'
-  festivalType?: FestivalType
+  category: 'bakery' | 'hampers' | 'corporate' | 'cakes' | 'frozen'
   bakeryType?: BakeryType
   stock: number
   ingredients: string
@@ -154,7 +141,7 @@ export const PRODUCTS: Product[] = [
     reviews: { average: 4.7, count: 134 },
   },
 
-  // ============= CELEBRATION CAKES =============
+  // ============= HAMPER & GIFT SETS =============
   {
     id: '9',
     name: 'Chocolate Celebration Cake',
@@ -203,34 +190,33 @@ export const PRODUCTS: Product[] = [
   // ============= FESTIVAL GIFTS =============
   {
     id: '11',
-    name: 'Diwali Premium Gift Hamper',
-    slug: 'diwali-premium-hamper',
+    name: 'Premium Gift Hamper - Deluxe',
+    slug: 'premium-gift-hamper-deluxe',
     price: 1499,
     comparePrice: 1999,
-    description: 'Celebrate the festival of lights with our premium Diwali hamper. Includes handmade sweets (500g), decorative diyas (4pc), premium dry fruits (250g), scented candles (2pc), and festive decorations. Beautifully packaged in an eco-friendly gift box with ribbon.',
-    shortDesc: 'Curated festive hamper with sweets and decoratives',
+    description: 'A luxurious gift collection featuring handmade sweets (500g), premium dry fruits (250g), scented candles (2pc), and elegant decorative items. Beautifully packaged in an eco-friendly gift box with ribbon. Perfect for celebrations, corporate gifting, or special occasions.',
+    shortDesc: 'Curated premium hamper with sweets and treats',
     thumbnail: 'https://images.unsplash.com/photo-1605811345115-f4c2d8dea51a?w=800&h=800&fit=crop',
     images: [
       'https://images.unsplash.com/photo-1605811345115-f4c2d8dea51a?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1609682700074-c1c5f7f6d3a1?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1634929801041-c852c1096c98?w=1200&h=800&fit=crop',
     ],
-    category: 'festivals',
-    festivalType: 'diwali',
+    category: 'hampers',
     stock: 42,
     ingredients: 'Mixed Indian sweets, dry fruits, decorative items',
     allergens: 'May contain nuts, dairy',
-    tags: ['Diwali', 'Festival', 'Premium', 'Gift Box', 'Hamper', 'Sweets'],
+    tags: ['Premium', 'Gift Box', 'Hamper', 'Sweets', 'Luxury'],
     isFeatured: true,
     reviews: { average: 4.7, count: 89 },
   },
   {
     id: '12',
-    name: 'Diwali Dry Fruit Gift Box',
-    slug: 'diwali-dry-fruit-box',
+    name: 'Dry Fruit Gift Box - Premium Selection',
+    slug: 'dry-fruit-gift-box-premium',
     price: 1299,
     comparePrice: 1699,
-    description: 'Premium selection of dry fruits perfect for Diwali gifting. Contains almonds, cashews, pistachios, raisins, walnuts, and dates (total 500g). Packaged in an elegant reusable wooden box with Diwali-themed decoration.',
+    description: 'Premium selection of dry fruits perfect for gifting. Contains almonds, cashews, pistachios, raisins, walnuts, and dates (total 500g). Packaged in an elegant reusable wooden box. A thoughtful gift for health-conscious loved ones.',
     shortDesc: 'Premium dry fruits in elegant wooden box',
     thumbnail: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=800&h=800&fit=crop',
     images: [
@@ -238,22 +224,21 @@ export const PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1610832745114-e0e01453ff7b?w=1200&h=800&fit=crop',
     ],
-    category: 'festivals',
-    festivalType: 'diwali',
+    category: 'hampers',
     stock: 55,
     ingredients: 'Almonds, cashews, pistachios, raisins, walnuts, dates',
     allergens: 'Contains nuts',
-    tags: ['Diwali', 'Dry Fruits', 'Premium', 'Wooden Box', 'Healthy', 'Gift'],
+    tags: ['Dry Fruits', 'Premium', 'Wooden Box', 'Healthy', 'Gift', 'Luxury'],
     isFeatured: true,
     reviews: { average: 4.9, count: 156 },
   },
   {
     id: '13',
-    name: 'Diwali Sweet Box - Assorted',
-    slug: 'diwali-sweet-box',
+    name: 'Traditional Sweet Box - Assorted Delights',
+    slug: 'traditional-sweet-box-assorted',
     price: 799,
     comparePrice: 1099,
-    description: 'Assorted traditional Indian sweets perfect for Diwali celebrations. Includes kaju katli, ladoo, barfi, and gulab jamun (1kg total). Made fresh with premium ingredients by expert halwais. Beautiful festive packaging.',
+    description: 'Assorted traditional Indian sweets featuring premium classics. Includes kaju katli, ladoo, barfi, and gulab jamun (1kg total). Made fresh with premium ingredients by expert halwais. Beautiful gift packaging perfect for any celebration.',
     shortDesc: 'Traditional Indian sweets assortment (1kg)',
     thumbnail: 'https://images.unsplash.com/photo-1610832745114-e0e01453ff7b?w=800&h=800&fit=crop',
     images: [
@@ -261,68 +246,65 @@ export const PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1628260412297-a3377e45006f?w=1200&h=800&fit=crop',
     ],
-    category: 'festivals',
-    festivalType: 'diwali',
+    category: 'hampers',
     stock: 65,
     ingredients: 'Milk, sugar, cashews, almonds, ghee, rose water, saffron',
     allergens: 'Contains dairy, nuts',
-    tags: ['Diwali', 'Indian Sweets', 'Traditional', 'Halwai', 'Fresh', 'Gift Box'],
+    tags: ['Indian Sweets', 'Traditional', 'Halwai', 'Fresh', 'Gift Box', 'Assorted'],
     isFeatured: false,
     reviews: { average: 4.8, count: 198 },
   },
   {
     id: '14',
-    name: 'Holi Color & Snack Celebration Kit',
-    slug: 'holi-celebration-kit',
+    name: 'Celebration Snack Hamper - Traditional',
+    slug: 'celebration-snack-hamper-traditional',
     price: 899,
     comparePrice: 1199,
-    description: 'Complete Holi celebration kit with organic gulal colors (5 vibrant colors), traditional snacks (gujiya, namak pare, mathri), and festive decorations. Safe, non-toxic colors perfect for family celebrations.',
-    shortDesc: 'Organic colors and traditional snacks kit',
+    description: 'A delightful collection of traditional snacks perfect for any celebration. Includes gujiya, namak pare, mathri, and other savory treats. Thoughtfully curated for sharing joy and making memories with loved ones.',
+    shortDesc: 'Traditional snacks hamper for celebrations',
     thumbnail: 'https://images.unsplash.com/photo-1583241800698-2d193c67d556?w=800&h=800&fit=crop',
     images: [
       'https://images.unsplash.com/photo-1583241800698-2d193c67d556?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1520967824495-b529aeba26df?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?w=1200&h=800&fit=crop',
     ],
-    category: 'festivals',
-    festivalType: 'holi',
+    category: 'hampers',
     stock: 38,
-    ingredients: 'Organic colors, wheat flour, spices, oil, traditional snacks',
+    ingredients: 'Wheat flour, spices, oil, traditional snacks, nuts',
     allergens: 'Contains gluten. May contain nuts',
-    tags: ['Holi', 'Colors', 'Organic', 'Snacks', 'Festival', 'Safe'],
+    tags: ['Snacks', 'Traditional', 'Gift Box', 'Celebration', 'Hamper'],
     isFeatured: true,
     reviews: { average: 4.6, count: 112 },
   },
   {
     id: '15',
-    name: 'Raksha Bandhan Gift Set',
-    slug: 'raksha-bandhan-gift-set',
+    name: 'Chocolate & Dry Fruit Gift Set',
+    slug: 'chocolate-dry-fruit-gift-set',
     price: 699,
     comparePrice: 899,
-    description: 'Special Rakhi gift set with handcrafted rakhi, premium chocolates (200g), dry fruits (150g), and a personalized greeting card. Perfect for celebrating the bond between siblings.',
-    shortDesc: 'Rakhi with chocolates and dry fruits',
+    description: 'An elegant gift set featuring premium Belgian chocolates (200g), assorted dry fruits (150g), and a personalized greeting card. Perfect for expressing appreciation and celebrating special bonds.',
+    shortDesc: 'Premium chocolates with dry fruits gift set',
     thumbnail: 'https://images.unsplash.com/photo-1597328117112-7c8ab97c6bae?w=800&h=800&fit=crop',
     images: [
       'https://images.unsplash.com/photo-1597328117112-7c8ab97c6bae?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=1200&h=800&fit=crop',
     ],
-    category: 'festivals',
-    festivalType: 'raksha-bandhan',
+    category: 'hampers',
     stock: 48,
-    ingredients: 'Handcrafted rakhi, Belgian chocolates, assorted dry fruits',
+    ingredients: 'Belgian chocolates, assorted dry fruits, greeting card',
     allergens: 'May contain nuts, dairy',
-    tags: ['Raksha Bandhan', 'Rakhi', 'Gift Set', 'Chocolates', 'Dry Fruits'],
+    tags: ['Gift Set', 'Chocolates', 'Dry Fruits', 'Premium', 'Hamper'],
     isFeatured: false,
     reviews: { average: 4.7, count: 145 },
   },
   {
     id: '21',
-    name: 'Christmas Fruit Cake',
-    slug: 'christmas-fruit-cake',
+    name: 'Premium Fruit Cake - Classic Recipe',
+    slug: 'premium-fruit-cake-classic',
     price: 999,
     comparePrice: 1299,
-    description: 'Traditional Christmas fruit cake loaded with dried fruits, nuts, and aromatic spices. Soaked in rum for rich flavor and moist texture. Perfect for Christmas celebrations and gifting. Can be personalized with festive decorations.',
+    description: 'A timeless fruit cake loaded with dried fruits, nuts, and aromatic spices. Soaked in rum for rich flavor and moist texture. Perfect for celebrations and gifting. Can be personalized with custom decorations.',
     shortDesc: 'Traditional fruit cake with rum and dried fruits',
     thumbnail: 'https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=800&h=800&fit=crop',
     images: [
@@ -330,45 +312,43 @@ export const PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=1200&h=800&fit=crop',
     ],
-    category: 'festivals',
-    festivalType: 'christmas',
+    category: 'hampers',
     stock: 35,
     ingredients: 'Dried fruits, nuts, flour, eggs, butter, rum, spices',
     allergens: 'Contains gluten, dairy, eggs, nuts, alcohol',
-    tags: ['Christmas', 'Fruit Cake', 'Festive', 'Traditional', 'Rum'],
+    tags: ['Fruit Cake', 'Premium', 'Traditional', 'Rum', 'Gift'],
     isFeatured: true,
     reviews: { average: 4.8, count: 165 },
   },
   {
     id: '22',
-    name: 'Christmas Cookie Gift Box',
-    slug: 'christmas-cookie-box',
+    name: 'Artisan Cookie Gift Box - Decorated',
+    slug: 'artisan-cookie-gift-box-decorated',
     price: 649,
     comparePrice: 849,
-    description: 'Festive assortment of Christmas cookies including gingerbread men, sugar cookies, chocolate chip cookies, and shortbread (24pc). Beautifully decorated with festive icing and packaged in a holiday gift box.',
-    shortDesc: 'Assorted festive cookies in holiday gift box',
+    description: 'Delightful assortment of artisan cookies including gingerbread, sugar cookies, chocolate chip cookies, and shortbread (24pc). Beautifully decorated with premium icing and packaged in an elegant gift box.',
+    shortDesc: 'Assorted decorated cookies in gift box',
     thumbnail: 'https://images.unsplash.com/photo-zen35Y3B834?w=800&h=800&fit=crop',
     images: [
       'https://images.unsplash.com/photo-zen35Y3B834?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-9LfcAIYcl9o?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-Uob05epD1qg?w=1200&h=800&fit=crop',
     ],
-    category: 'festivals',
-    festivalType: 'christmas',
+    category: 'hampers',
     stock: 45,
     ingredients: 'Flour, butter, sugar, eggs, ginger, cinnamon, chocolate chips, icing',
     allergens: 'Contains gluten, dairy, eggs',
-    tags: ['Christmas', 'Cookies', 'Gingerbread', 'Festive', 'Gift Box'],
+    tags: ['Cookies', 'Gingerbread', 'Decorated', 'Gift Box', 'Artisan'],
     isFeatured: true,
     reviews: { average: 4.9, count: 198 },
   },
   {
     id: '23',
-    name: 'Christmas Plum Cake',
-    slug: 'christmas-plum-cake',
+    name: 'Plum Cake - Brandy Infused',
+    slug: 'plum-cake-brandy-infused',
     price: 899,
     comparePrice: 1199,
-    description: 'Rich plum cake infused with brandy and loaded with candied fruits, raisins, and nuts. Traditional Christmas recipe with intense flavors. Perfect for sharing with family and friends during the holidays.',
+    description: 'Rich plum cake infused with brandy and loaded with candied fruits, raisins, and nuts. Traditional recipe with intense flavors and moist texture. Perfect for sharing with family and friends during celebrations.',
     shortDesc: 'Brandy-soaked plum cake with candied fruits',
     thumbnail: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&h=800&fit=crop',
     images: [
@@ -376,22 +356,21 @@ export const PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=1200&h=800&fit=crop',
     ],
-    category: 'festivals',
-    festivalType: 'christmas',
+    category: 'hampers',
     stock: 40,
     ingredients: 'Plums, candied fruits, raisins, nuts, flour, butter, eggs, brandy, spices',
     allergens: 'Contains gluten, dairy, eggs, nuts, alcohol',
-    tags: ['Christmas', 'Plum Cake', 'Brandy', 'Festive', 'Traditional'],
+    tags: ['Plum Cake', 'Brandy', 'Premium', 'Traditional', 'Gift'],
     isFeatured: false,
     reviews: { average: 4.7, count: 142 },
   },
   {
     id: '24',
-    name: 'Eid Dates & Nuts Gift Hamper',
-    slug: 'eid-dates-nuts-hamper',
+    name: 'Dates & Nuts Luxury Hamper',
+    slug: 'dates-nuts-luxury-hamper',
     price: 1199,
     comparePrice: 1599,
-    description: 'Premium Eid gift hamper with Medjool dates (500g), assorted nuts (almonds, pistachios, cashews - 400g), and traditional baklava. Elegantly packaged in a decorative box perfect for Eid gifting.',
+    description: 'Premium gift hamper featuring Medjool dates (500g), assorted nuts (almonds, pistachios, cashews - 400g), and traditional baklava. Elegantly packaged in a decorative box perfect for gifting on special occasions.',
     shortDesc: 'Premium dates, nuts, and baklava hamper',
     thumbnail: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=800&h=800&fit=crop',
     images: [
@@ -399,35 +378,33 @@ export const PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1610832745114-e0e01453ff7b?w=1200&h=800&fit=crop',
     ],
-    category: 'festivals',
-    festivalType: 'eid',
+    category: 'hampers',
     stock: 50,
     ingredients: 'Medjool dates, almonds, pistachios, cashews, baklava pastry, honey',
     allergens: 'Contains nuts, gluten',
-    tags: ['Eid', 'Dates', 'Nuts', 'Premium', 'Gift Hamper', 'Halal'],
+    tags: ['Dates', 'Nuts', 'Premium', 'Gift Hamper', 'Luxury', 'Baklava'],
     isFeatured: true,
     reviews: { average: 4.8, count: 134 },
   },
   {
     id: '25',
-    name: 'Eid Mubarak Sweet Box',
-    slug: 'eid-sweet-box',
+    name: 'Middle Eastern Sweet Box - Assorted',
+    slug: 'middle-eastern-sweet-box-assorted',
     price: 799,
     comparePrice: 1099,
-    description: 'Festive assortment of traditional sweets perfect for Eid celebrations. Includes baklava, dates filled with nuts, maamoul cookies, and Turkish delight. Beautiful festive packaging with Eid greetings.',
-    shortDesc: 'Traditional Eid sweets assortment',
+    description: 'Exquisite assortment of traditional Middle Eastern sweets. Includes baklava, dates filled with nuts, maamoul cookies, and Turkish delight. Beautiful gift packaging perfect for celebrations and special occasions.',
+    shortDesc: 'Traditional Middle Eastern sweets assortment',
     thumbnail: 'https://images.unsplash.com/photo-1610832745114-e0e01453ff7b?w=800&h=800&fit=crop',
     images: [
       'https://images.unsplash.com/photo-1610832745114-e0e01453ff7b?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1628260412297-a3377e45006f?w=1200&h=800&fit=crop',
     ],
-    category: 'festivals',
-    festivalType: 'eid',
+    category: 'hampers',
     stock: 55,
     ingredients: 'Dates, nuts, phyllo pastry, semolina, honey, rosewater, sugar',
     allergens: 'Contains nuts, gluten',
-    tags: ['Eid', 'Sweets', 'Traditional', 'Halal', 'Gift Box', 'Maamoul'],
+    tags: ['Sweets', 'Traditional', 'Gift Box', 'Maamoul', 'Baklava', 'Middle Eastern'],
     isFeatured: false,
     reviews: { average: 4.7, count: 118 },
   },
@@ -1231,11 +1208,6 @@ export function getProductsByCategory(category: string) {
   return PRODUCTS.filter((p) => p.category === category)
 }
 
-// Helper function to get products by festival type
-export function getProductsByFestival(festivalType: FestivalType) {
-  return PRODUCTS.filter((p) => p.festivalType === festivalType)
-}
-
 // Helper function to get product by slug
 export function getProductBySlug(slug: string) {
   return PRODUCTS.find((p) => p.slug === slug)
@@ -1244,31 +1216,6 @@ export function getProductBySlug(slug: string) {
 // Helper function to get featured products
 export function getFeaturedProducts() {
   return PRODUCTS.filter((p) => p.isFeatured)
-}
-
-// Helper function to get available festival types
-export function getAvailableFestivals(): FestivalType[] {
-  const festivals = new Set<FestivalType>()
-  PRODUCTS.forEach((p) => {
-    if (p.festivalType) {
-      festivals.add(p.festivalType)
-    }
-  })
-  return Array.from(festivals).sort()
-}
-
-// Festival display names
-export const FESTIVAL_NAMES: Record<FestivalType, string> = {
-  'diwali': 'Diwali',
-  'christmas': 'Christmas',
-  'holi': 'Holi',
-  'raksha-bandhan': 'Raksha Bandhan',
-  'eid': 'Eid',
-  'new-year': 'New Year',
-  'ganesh-chaturthi': 'Ganesh Chaturthi',
-  'navratri': 'Navratri',
-  'pongal': 'Pongal',
-  'onam': 'Onam',
 }
 
 // Helper function to get products by bakery type

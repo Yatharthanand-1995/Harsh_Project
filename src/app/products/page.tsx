@@ -7,8 +7,6 @@ import { Suspense } from 'react'
 import { prisma } from '@/lib/prisma'
 import { PAGINATION } from '@/lib/constants'
 import {
-  FESTIVAL_NAMES,
-  FestivalType,
   BAKERY_TYPE_NAMES,
   BakeryType,
 } from '@/data/products'
@@ -85,13 +83,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     allProductsCount,
     bakeryCount,
     cakesCount,
-    festivalsCount,
+    hampersCount,
     frozenCount,
   ] = await Promise.all([
     prisma.product.count({ where: { isActive: true } }),
     prisma.product.count({ where: { isActive: true, category: { slug: 'bakery' } } }),
     prisma.product.count({ where: { isActive: true, category: { slug: 'cakes' } } }),
-    prisma.product.count({ where: { isActive: true, category: { slug: 'festivals' } } }),
+    prisma.product.count({ where: { isActive: true, category: { slug: 'hampers' } } }),
     prisma.product.count({ where: { isActive: true, category: { slug: 'frozen' } } }),
   ])
 
@@ -120,7 +118,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   const categoryTitle = {
     bakery: 'Artisan Bakery',
-    festivals: 'Festival Gifts',
+    hampers: 'Hamper & Gift Sets',
     corporate: 'Corporate Gifting',
     cakes: 'Celebration Cakes',
     frozen: 'Frozen & Ready to Consume',
@@ -130,8 +128,6 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   let pageTitle = 'All Products'
   if (bakeryType) {
     pageTitle = `${BAKERY_TYPE_NAMES[bakeryType as BakeryType]}`
-  } else if (festival) {
-    pageTitle = `${FESTIVAL_NAMES[festival as FestivalType]} Gifts`
   } else if (category) {
     pageTitle = categoryTitle[category as keyof typeof categoryTitle]
   }
@@ -166,15 +162,15 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           </section>
         )}
 
-        {/* Festivals Category Hero */}
-        {category === 'festivals' && (
+        {/* Hampers Category Hero */}
+        {category === 'hampers' && (
           <section className="relative h-96 overflow-hidden mb-12">
             <div className="absolute inset-0">
               <Image
                 src="https://images.unsplash.com/photo-1605811345115-f4c2d8dea51a?w=1920&q=80"
                 fill
                 className="object-cover"
-                alt="Festival celebrations"
+                alt="Gift hampers and sets"
                 sizes="100vw"
                 priority
               />
@@ -183,10 +179,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             <div className="relative z-10 container mx-auto h-full flex items-center px-4">
               <div className="max-w-2xl text-white">
                 <h1 className="font-serif text-6xl lg:text-7xl font-black mb-4 drop-shadow-2xl">
-                  Festival Collections
+                  Hamper & Gift Sets
                 </h1>
                 <p className="text-xl leading-relaxed drop-shadow-md">
-                  Celebrate India&apos;s rich traditions with curated gift hampers
+                  Curated gift collections perfect for any occasion
                 </p>
               </div>
             </div>
@@ -195,7 +191,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
         <div className="container mx-auto px-4 py-12">
           {/* Page Header - Only show for non-hero categories */}
-          {category !== 'bakery' && category !== 'festivals' && (
+          {category !== 'bakery' && category !== 'hampers' && (
             <div className="mb-12 text-center">
               <h1 className="mb-4 font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-[hsl(var(--sienna))]">
                 {pageTitle}
@@ -241,14 +237,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   🎂 Cakes ({cakesCount})
                 </Link>
                 <Link
-                  href="/products?category=festivals"
+                  href="/products?category=hampers"
                   className={`rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold transition-all ${
-                    category === 'festivals'
+                    category === 'hampers'
                       ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
                       : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
                   }`}
                 >
-                  🪔 Festivals ({festivalsCount})
+                  🎁 Hampers ({hampersCount})
                 </Link>
                 <Link
                   href="/products?category=frozen"
@@ -305,42 +301,6 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             </div>
           )}
 
-          {/* Festival Sub-Filters */}
-          {(category === 'festivals' || festival) && availableFestivals.length > 0 && (
-            <div className="mb-8">
-              <h2 className="mb-4 font-serif text-2xl font-bold text-[hsl(var(--sienna))]">
-                Browse by Festival
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  href="/products?category=festivals"
-                  className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
-                    category === 'festivals' && !festival
-                      ? 'bg-[hsl(var(--saffron))] text-white shadow-md scale-105'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm'
-                  }`}
-                >
-                  All Festivals
-                </Link>
-                {availableFestivals.map((fest) => {
-                  if (!fest.festivalType) return null
-                  return (
-                    <Link
-                      key={fest.festivalType}
-                      href={`/products?category=festivals&festival=${fest.festivalType}`}
-                      className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
-                        festival === fest.festivalType
-                          ? 'bg-[hsl(var(--saffron))] text-white shadow-md scale-105'
-                          : 'bg-white text-gray-700 hover:bg-gray-100 hover:shadow-sm'
-                      }`}
-                    >
-                      {FESTIVAL_NAMES[fest.festivalType as FestivalType]}
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          )}
 
           {/* Products Grid */}
           <Suspense fallback={<ProductGridSkeleton />}>
@@ -352,7 +312,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               return (
                 <div className="mb-16">
                   <h2 className="text-4xl font-serif font-bold text-[hsl(var(--sienna))] mb-8">
-                    Featured {category === 'bakery' ? 'Baked Goods' : category === 'festivals' ? 'Festival Gifts' : 'Products'}
+                    Featured {category === 'bakery' ? 'Baked Goods' : category === 'hampers' ? 'Gift Sets' : 'Products'}
                   </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 auto-rows-[180px] sm:auto-rows-[220px] md:auto-rows-[250px]">
