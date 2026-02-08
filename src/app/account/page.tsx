@@ -13,7 +13,7 @@ export default function AccountPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: session?.user?.name || '',
-    phone: session?.user?.phone || '',
+    phone: (session?.user as any)?.phone || '',
   })
 
   // Redirect if not authenticated
@@ -49,7 +49,7 @@ export default function AccountPage() {
   const handleCancel = () => {
     setFormData({
       name: session?.user?.name || '',
-      phone: session?.user?.phone || '',
+      phone: (session?.user as any)?.phone || '',
     })
     setIsEditing(false)
   }
@@ -152,7 +152,7 @@ export default function AccountPage() {
               />
             ) : (
               <p className="rounded-lg bg-gray-50 px-4 py-3 text-gray-800">
-                {session?.user?.phone || 'Not set'}
+                {(session?.user as any)?.phone || 'Not set'}
               </p>
             )}
           </div>
