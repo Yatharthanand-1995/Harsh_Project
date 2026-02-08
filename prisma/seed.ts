@@ -67,13 +67,13 @@ async function main() {
     }),
     prisma.category.upsert({
       where: { slug: 'frozen' },
-      update: {},
+      update: { isActive: false },
       create: {
         name: 'Frozen & Ready to Consume',
         slug: 'frozen',
         description: 'Frozen products ready to heat and eat',
         order: 5,
-        isActive: true,
+        isActive: false,
       },
     }),
   ])
