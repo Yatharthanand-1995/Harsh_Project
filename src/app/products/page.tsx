@@ -221,16 +221,19 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 >
                   🎁 Hampers ({hampersCount})
                 </Link>
-                <Link
-                  href="/products?category=frozen"
-                  className={`rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold transition-all ${
-                    category === 'frozen'
-                      ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
-                      : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
-                  }`}
-                >
-                  🧊 Frozen ({frozenCount})
-                </Link>
+                {/* Only show Frozen tab if there are products */}
+                {frozenCount > 0 && (
+                  <Link
+                    href="/products?category=frozen"
+                    className={`rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold transition-all ${
+                      category === 'frozen'
+                        ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
+                        : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
+                    }`}
+                  >
+                    🧊 Frozen ({frozenCount})
+                  </Link>
+                )}
               </div>
 
               <p className="text-gray-600 font-medium">
