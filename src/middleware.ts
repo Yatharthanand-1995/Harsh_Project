@@ -7,8 +7,7 @@ import { auth } from './lib/auth';
  * Protects routes that require authentication
  * - /cart/* - Requires authenticated user
  * - /checkout/* - Requires authenticated user
- * - /profile/* - Requires authenticated user
- * - /orders/* - Requires authenticated user
+ * - /account/* - Requires authenticated user
  * - /admin/* - Requires authenticated user with ADMIN role
  */
 export async function middleware(request: NextRequest) {
