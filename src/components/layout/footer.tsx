@@ -63,30 +63,6 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/delivery"
-                  className="transition-colors hover:pl-1 hover:text-[hsl(var(--saffron))]"
-                >
-                  Delivery Info
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/faq"
-                  className="transition-colors hover:pl-1 hover:text-[hsl(var(--saffron))]"
-                >
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/track-order"
-                  className="transition-colors hover:pl-1 hover:text-[hsl(var(--saffron))]"
-                >
-                  Track Order
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/contact"
                   className="transition-colors hover:pl-1 hover:text-[hsl(var(--saffron))]"
                 >
