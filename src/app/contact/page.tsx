@@ -1,12 +1,74 @@
-import { Mail, Instagram, MapPin, Phone } from 'lucide-react'
-import Link from 'next/link'
+'use client'
 
-export const metadata = {
-  title: 'Contact Us | Homespun',
-  description: 'Get in touch with Homespun for orders, inquiries, or custom requests.',
-}
+import { Mail, Instagram, CheckCircle, AlertCircle } from 'lucide-react'
+import { useState } from 'react'
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null
+    message: string
+  }>({ type: null, message: '' })
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitStatus({ type: null, message: '' })
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSubmitStatus({
+          type: 'success',
+          message: 'Thank you! Your message has been sent successfully. We\'ll get back to you soon.',
+        })
+        // Clear form
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          message: '',
+        })
+      } else {
+        setSubmitStatus({
+          type: 'error',
+          message: data.error || 'Failed to send message. Please try again.',
+        })
+      }
+    } catch (error) {
+      setSubmitStatus({
+        type: 'error',
+        message: 'An unexpected error occurred. Please try again later.',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[hsl(var(--warm-beige))] to-[hsl(var(--cream))]">
       {/* Header */}
@@ -83,71 +145,99 @@ export default function ContactPage() {
               Have a question or special request? Fill out the form below and we'll respond shortly.
             </p>
 
-            <form className="space-y-6">
+            {/* Status Messages */}
+            {submitStatus.type === 'success' && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+                <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
+                <p className="text-green-800">{submitStatus.message}</p>
+              </div>
+            )}
+
+            {submitStatus.type === 'error' && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-red-800">{submitStatus.message}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="name" className="block text-gray-700 font-semibold mb-2">
-                    Your Name
+                    Your Name *
                   </label>
                   <input
                     type="text"
                     id="name"
                     name="name"
+                    value={formData.name}
+                    onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(var(--sienna))] focus:border-transparent outline-none transition"
                     placeholder="Enter your name"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
                 <div>
                   <label htmlFor="email" className="block text-gray-700 font-semibold mb-2">
-                    Email Address
+                    Email Address *
                   </label>
                   <input
                     type="email"
                     id="email"
                     name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(var(--sienna))] focus:border-transparent outline-none transition"
                     placeholder="your.email@example.com"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
 
               <div>
                 <label htmlFor="subject" className="block text-gray-700 font-semibold mb-2">
-                  Subject
+                  Subject *
                 </label>
                 <input
                   type="text"
                   id="subject"
                   name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(var(--sienna))] focus:border-transparent outline-none transition"
                   placeholder="What is this regarding?"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
 
               <div>
                 <label htmlFor="message" className="block text-gray-700 font-semibold mb-2">
-                  Message
+                  Message *
                 </label>
                 <textarea
                   id="message"
                   name="message"
+                  value={formData.message}
+                  onChange={handleChange}
                   rows={6}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[hsl(var(--sienna))] focus:border-transparent outline-none transition resize-none"
                   placeholder="Tell us more about your inquiry..."
                   required
+                  disabled={isSubmitting}
                 />
               </div>
 
               <div className="text-center">
                 <button
                   type="submit"
-                  className="bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] px-12 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-shadow"
+                  disabled={isSubmitting}
+                  className="bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] px-12 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Send Message
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </button>
               </div>
             </form>
