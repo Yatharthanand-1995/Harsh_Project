@@ -19,7 +19,7 @@ if (!globalForPrisma.pool) {
   logger.info('Creating Prisma connection pool')
   globalForPrisma.pool = new Pool({
     connectionString: url,
-    max: 1, // Recommended for Vercel serverless functions
+    max: 10, // Increased from 1 to handle concurrent requests
   })
 }
 

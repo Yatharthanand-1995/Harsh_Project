@@ -11,6 +11,10 @@ import {
   BakeryType,
 } from '@/data/products'
 
+// Force dynamic rendering to always fetch fresh data from database
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface ProductsPageProps {
   searchParams: Promise<{
     category?: string
@@ -30,89 +34,88 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const currentPage = Math.max(1, parseInt(page || '1', 10))
   const perPage = PAGINATION.DEFAULT_PAGE_SIZE
 
-  // Build Prisma where clause based on filters
-  const where: any = {
+  // Build Prisma where clause based on filters (type-safe)
+  const where = {
     isActive: true,
+    ...(category && { category: { slug: category } }),
+    ...(festival && { festivalType: festival }),
+    ...(bakeryType && { bakeryType }),
+    ...(featured === 'true' && { isFeatured: true }),
+    ...(search && {
+      OR: [
+        { name: { contains: search, mode: 'insensitive' as const } },
+        { shortDesc: { contains: search, mode: 'insensitive' as const } },
+      ],
+    }),
   }
 
-  if (category) {
-    where.category = { slug: category }
-  }
+  // Optimized: Run queries in parallel with a single Promise.all
+  const [
+    totalCount,
+    filteredProducts,
+    categoryCounts,
+    availableBakeryTypes,
+  ] = await Promise.all([
+    // Query 1: Get total count for pagination
+    prisma.product.count({ where }),
 
-  if (festival) {
-    where.festivalType = festival
-  }
+    // Query 2: Fetch products with category
+    prisma.product.findMany({
+      where,
+      include: {
+        category: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip: (Math.max(1, currentPage) - 1) * perPage,
+      take: perPage,
+    }),
 
-  if (bakeryType) {
-    where.bakeryType = bakeryType
-  }
+    // Query 3: Get all category counts in one query using groupBy
+    prisma.product.groupBy({
+      by: ['categoryId'],
+      where: { isActive: true },
+      _count: true,
+    }).then(async (results) => {
+      // Get category slugs for the IDs
+      const categoryIds = results.map(r => r.categoryId)
+      const categories = await prisma.category.findMany({
+        where: { id: { in: categoryIds } },
+        select: { id: true, slug: true },
+      })
 
-  if (featured === 'true') {
-    where.isFeatured = true
-  }
+      const categoryMap = Object.fromEntries(categories.map(c => [c.id, c.slug]))
 
-  if (search) {
-    where.OR = [
-      { name: { contains: search, mode: 'insensitive' } },
-      { shortDesc: { contains: search, mode: 'insensitive' } },
-    ]
-  }
+      return {
+        all: results.reduce((sum, r) => sum + r._count, 0),
+        bakery: results.find(r => categoryMap[r.categoryId] === 'bakery')?._count || 0,
+        hampers: results.find(r => categoryMap[r.categoryId] === 'hampers')?._count || 0,
+        frozen: results.find(r => categoryMap[r.categoryId] === 'frozen')?._count || 0,
+      }
+    }),
 
-  // Get total count for pagination
-  const totalCount = await prisma.product.count({ where })
+    // Query 4: Get available bakery types
+    prisma.product.findMany({
+      where: {
+        isActive: true,
+        bakeryType: { not: null },
+      },
+      select: {
+        bakeryType: true,
+      },
+      distinct: ['bakeryType'],
+    }),
+  ])
+
+  // Extract category counts
+  const { all: allProductsCount, bakery: bakeryCount, hampers: hampersCount, frozen: frozenCount } = categoryCounts
 
   // Calculate pagination
   const totalPages = Math.ceil(totalCount / perPage)
-  const skip = (currentPage - 1) * perPage
 
-  // Fetch products from database with category included and pagination
-  const filteredProducts = await prisma.product.findMany({
-    where,
-    include: {
-      category: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    skip,
-    take: perPage,
-  })
-
-  // Get total counts for filter buttons
-  const [
-    allProductsCount,
-    bakeryCount,
-    hampersCount,
-    frozenCount,
-  ] = await Promise.all([
-    prisma.product.count({ where: { isActive: true } }),
-    prisma.product.count({ where: { isActive: true, category: { slug: 'bakery' } } }),
-    prisma.product.count({ where: { isActive: true, category: { slug: 'hampers' } } }),
-    prisma.product.count({ where: { isActive: true, category: { slug: 'frozen' } } }),
-  ])
-
-  // Get available festivals and bakery types from database
-  const availableFestivals = await prisma.product.findMany({
-    where: {
-      isActive: true,
-      festivalType: { not: null },
-    },
-    select: {
-      festivalType: true,
-    },
-    distinct: ['festivalType'],
-  })
-
-  const availableBakeryTypes = await prisma.product.findMany({
-    where: {
-      isActive: true,
-      bakeryType: { not: null },
-    },
-    select: {
-      bakeryType: true,
-    },
-    distinct: ['bakeryType'],
-  })
+  // Note: Removed availableFestivals as festivalType was removed from the schema
+  const availableFestivals: any[] = []
 
   const categoryTitle = {
     bakery: 'Artisan Bakery',

@@ -122,6 +122,11 @@ model Product {
   @@index([isActive])
   @@index([bakeryType])
   @@index([festivalType])
+  // Compound indexes for common filter combinations (performance optimization)
+  @@index([isActive, categoryId])
+  @@index([isActive, bakeryType])
+  @@index([isActive, isFeatured])
+  @@index([categoryId, isActive])
 }
 
 model Variant {
