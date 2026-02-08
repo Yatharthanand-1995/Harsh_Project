@@ -46,7 +46,7 @@ export function Footer() {
               </li> */}
               <li>
                 <Link
-                  href="/products?featured=true"
+                  href="/contact"
                   className="transition-colors hover:pl-1 hover:text-[hsl(var(--saffron))]"
                 >
                   Custom Orders
