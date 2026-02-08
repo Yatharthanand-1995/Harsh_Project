@@ -36,10 +36,13 @@ export default function CheckoutPage() {
   })
   const [orderCreated, setOrderCreated] = useState<any>(null)
   const [showPaymentDetails, setShowPaymentDetails] = useState(false)
+  const [hasFetched, setHasFetched] = useState(false)
 
   // Fetch cart on mount
   useEffect(() => {
-    fetchCart()
+    fetchCart().then(() => {
+      setHasFetched(true)
+    })
   }, [fetchCart])
 
   // Calculate totals using memoization
@@ -57,12 +60,12 @@ export default function CheckoutPage() {
     }
   }, [cart])
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty (only after initial fetch)
   useEffect(() => {
-    if (!isLoading && cart.length === 0) {
+    if (hasFetched && cart.length === 0) {
       router.push('/cart')
     }
-  }, [cart, isLoading, router])
+  }, [cart, hasFetched, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -183,14 +186,15 @@ export default function CheckoutPage() {
     { id: 'midnight', label: 'Midnight (11 PM - 1 AM)', icon: '🌙', extra: '+₹100' },
   ]
 
-  // Show loading state
-  if (isLoading) {
+  // Show loading state while fetching cart
+  if (!hasFetched || isLoading) {
     return (
       <>
         <Header />
         <main className="flex min-h-screen items-center justify-center bg-gray-50">
           <div className="text-center">
-            <div className="mb-4 text-lg font-semibold">Loading checkout...</div>
+            <div className="mb-4 text-6xl">⏳</div>
+            <div className="text-lg font-semibold">Loading checkout...</div>
           </div>
         </main>
         <Footer />
@@ -198,7 +202,7 @@ export default function CheckoutPage() {
     )
   }
 
-  // Show empty cart message if no items
+  // Show empty cart message if no items (only after fetch)
   if (cart.length === 0) {
     return (
       <>
