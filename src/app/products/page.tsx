@@ -82,13 +82,11 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const [
     allProductsCount,
     bakeryCount,
-    cakesCount,
     hampersCount,
     frozenCount,
   ] = await Promise.all([
     prisma.product.count({ where: { isActive: true } }),
     prisma.product.count({ where: { isActive: true, category: { slug: 'bakery' } } }),
-    prisma.product.count({ where: { isActive: true, category: { slug: 'cakes' } } }),
     prisma.product.count({ where: { isActive: true, category: { slug: 'hampers' } } }),
     prisma.product.count({ where: { isActive: true, category: { slug: 'frozen' } } }),
   ])
@@ -120,7 +118,6 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     bakery: 'Artisan Bakery',
     hampers: 'Hamper & Gift Sets',
     corporate: 'Corporate Gifting',
-    cakes: 'Celebration Cakes',
     frozen: 'Frozen & Ready to Consume',
   }
 
@@ -225,16 +222,6 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   }`}
                 >
                   🥖 Bakery ({bakeryCount})
-                </Link>
-                <Link
-                  href="/products?category=cakes"
-                  className={`rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-bold transition-all ${
-                    category === 'cakes'
-                      ? 'bg-[hsl(var(--sienna))] text-[hsl(var(--cream))] shadow-lg scale-105'
-                      : 'bg-white text-[hsl(var(--sienna))] hover:shadow-md hover:scale-102'
-                  }`}
-                >
-                  🎂 Cakes ({cakesCount})
                 </Link>
                 <Link
                   href="/products?category=hampers"

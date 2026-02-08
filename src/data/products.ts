@@ -1,4 +1,4 @@
-export type BakeryType = 'baked-goods' | 'ready-to-consume'
+export type BakeryType = 'baked-goods' | 'ready-to-consume' | 'cakes'
 
 export interface Product {
   id: string
@@ -10,7 +10,7 @@ export interface Product {
   shortDesc: string
   thumbnail: string
   images: string[]
-  category: 'bakery' | 'hampers' | 'corporate' | 'cakes' | 'frozen'
+  category: 'bakery' | 'hampers' | 'corporate' | 'frozen'
   bakeryType?: BakeryType
   stock: number
   ingredients: string
@@ -141,7 +141,7 @@ export const PRODUCTS: Product[] = [
     reviews: { average: 4.7, count: 134 },
   },
 
-  // ============= HAMPER & GIFT SETS =============
+  // ============= CAKES =============
   {
     id: '9',
     name: 'Chocolate Celebration Cake',
@@ -156,7 +156,8 @@ export const PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-kPxsqUGneXQ?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-drleE5Mm21w?w=1200&h=800&fit=crop',
     ],
-    category: 'cakes',
+    category: 'bakery',
+    bakeryType: 'cakes',
     stock: 15,
     ingredients: 'Premium cocoa, eggs, flour, sugar, butter, vanilla extract, chocolate ganache',
     allergens: 'Contains dairy, eggs, gluten',
@@ -178,7 +179,8 @@ export const PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1614707267537-b85aaf00c4b7?w=1200&h=800&fit=crop',
       'https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=1200&h=800&fit=crop',
     ],
-    category: 'cakes',
+    category: 'bakery',
+    bakeryType: 'cakes',
     stock: 12,
     ingredients: 'Flour, cocoa, buttermilk, eggs, butter, cream cheese, vanilla',
     allergens: 'Contains gluten, dairy, eggs',
@@ -187,7 +189,7 @@ export const PRODUCTS: Product[] = [
     reviews: { average: 4.8, count: 187 },
   },
 
-  // ============= FESTIVAL GIFTS =============
+  // ============= HAMPER & GIFT SETS =============
   {
     id: '11',
     name: 'Premium Gift Hamper - Deluxe',
@@ -1238,4 +1240,5 @@ export function getAvailableBakeryTypes(): BakeryType[] {
 export const BAKERY_TYPE_NAMES: Record<BakeryType, string> = {
   'baked-goods': 'Baked Goods',
   'ready-to-consume': 'Ready to Consume',
+  'cakes': 'Cakes',
 }

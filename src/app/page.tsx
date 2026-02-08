@@ -197,7 +197,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 auto-rows-[180px] sm:auto-rows-[220px] md:auto-rows-[250px]">
               {/* Large featured item - spans 2 columns, 2 rows */}
               <Link
-                href="/products?category=celebration-cakes"
+                href="/products?category=bakery&bakeryType=cakes"
                 className="col-span-1 sm:col-span-2 row-span-1 sm:row-span-2 group relative overflow-hidden rounded-3xl"
               >
                 <Image
@@ -293,7 +293,7 @@ export default function HomePage() {
 
               {/* Cupcakes */}
               <Link
-                href="/products?category=cupcakes"
+                href="/products?category=bakery&bakeryType=cakes"
                 className="col-span-1 row-span-1 group relative overflow-hidden rounded-3xl"
               >
                 <Image

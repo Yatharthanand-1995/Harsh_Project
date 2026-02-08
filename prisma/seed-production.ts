@@ -5,18 +5,19 @@ import { Pool } from 'pg'
 import bcrypt from 'bcryptjs'
 import { PRODUCTS } from '../src/data/products'
 
-// Use direct PostgreSQL connection for seeding (bypassing Prisma Accelerate proxy)
-const directUrl = 'postgresql://yatharthanand@localhost:5432/template1?sslmode=disable&connection_limit=1'
+// Use production database URL
+const productionUrl = process.env.PROD_DATABASE_URL || process.env.DATABASE_URL
 
 const pool = new Pool({
-  connectionString: directUrl,
+  connectionString: productionUrl,
+  ssl: { rejectUnauthorized: false }
 })
 
 const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 
 async function main() {
-  console.log('🌱 Starting database seed...')
+  console.log('🌱 Starting production database seed...')
 
   // Create categories
   console.log('Creating categories...')
@@ -45,7 +46,7 @@ async function main() {
     }),
     prisma.category.upsert({
       where: { slug: 'hampers' },
-      update: {},
+      update: { name: 'Hamper & Gift Sets', description: 'Curated gift hampers perfect for any occasion' },
       create: {
         name: 'Hamper & Gift Sets',
         slug: 'hampers',
@@ -86,10 +87,10 @@ async function main() {
     {} as Record<string, string>
   )
 
-  console.log(`✅ Created ${categories.length} categories`)
+  console.log(`✅ Created/Updated ${categories.length} categories`)
 
   // Create products
-  console.log('Creating products...')
+  console.log('Creating/Updating products...')
   let productCount = 0
 
   for (const product of PRODUCTS) {
@@ -140,55 +141,10 @@ async function main() {
     productCount++
   }
 
-  console.log(`✅ Created ${productCount} products`)
-
-  // Create test user
-  console.log('Creating test user...')
-  const passwordHash = await bcrypt.hash('password123', 10)
-
-  const testUser = await prisma.user.upsert({
-    where: { email: 'test@homespun.com' },
-    update: {},
-    create: {
-      email: 'test@homespun.com',
-      name: 'Test User',
-      phone: '+91 9876543210',
-      passwordHash,
-      role: 'CUSTOMER',
-      emailVerified: new Date(),
-    },
-  })
-
-  console.log(`✅ Created test user: ${testUser.email}`)
-  console.log(`   Password: password123`)
-
-  // Create admin user
-  console.log('Creating admin user...')
-  const adminPasswordHash = await bcrypt.hash('admin123', 10)
-
-  const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@homespun.com' },
-    update: {},
-    create: {
-      email: 'admin@homespun.com',
-      name: 'Admin User',
-      phone: '+91 9876543211',
-      passwordHash: adminPasswordHash,
-      role: 'ADMIN',
-      emailVerified: new Date(),
-    },
-  })
-
-  console.log(`✅ Created admin user: ${adminUser.email}`)
-  console.log(`   Password: admin123`)
+  console.log(`✅ Created/Updated ${productCount} products`)
 
   console.log('')
-  console.log('🎉 Database seeded successfully!')
-  console.log('')
-  console.log('Test Credentials:')
-  console.log('─────────────────')
-  console.log('Customer: test@homespun.com / password123')
-  console.log('Admin:    admin@homespun.com / admin123')
+  console.log('🎉 Production database seeded successfully!')
 }
 
 main()
