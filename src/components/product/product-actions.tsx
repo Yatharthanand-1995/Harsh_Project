@@ -14,7 +14,7 @@ interface ProductActionsProps {
   stock: number
 }
 
-export function ProductActions({ productId, productName, price, stock }: ProductActionsProps) {
+export function ProductActions({ productId, productName, stock }: ProductActionsProps) {
   const [quantity, setQuantity] = useState(1)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const { addToCart } = useCartStore()
@@ -75,7 +75,7 @@ export function ProductActions({ productId, productName, price, stock }: Product
           text: `Check out ${productName}`,
           url: window.location.href,
         })
-      } catch (error) {
+      } catch {
         // Error sharing via Web Share API (user likely canceled)
       }
     } else {

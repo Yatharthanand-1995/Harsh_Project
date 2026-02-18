@@ -66,7 +66,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             </h2>
 
             <p className="mb-6 text-gray-600">
-              We're sorry for the inconvenience. Please try again.
+              We&apos;re sorry for the inconvenience. Please try again.
             </p>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (

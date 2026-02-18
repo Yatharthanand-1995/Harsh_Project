@@ -39,7 +39,7 @@ export default function AccountPage() {
           phone: formData.phone,
         },
       })
-    } catch (error) {
+    } catch {
       toast.error('Failed to update profile')
     } finally {
       setIsLoading(false)

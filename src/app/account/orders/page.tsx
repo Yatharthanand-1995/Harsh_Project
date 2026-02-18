@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -69,7 +70,7 @@ export default function OrdersPage() {
 
       const data = await response.json()
       setOrders(data.orders || [])
-    } catch (err) {
+    } catch {
       setError('Failed to load orders')
     } finally {
       setIsLoading(false)
@@ -245,10 +246,13 @@ export default function OrdersPage() {
                 {order.items.map((item) => (
                   <div key={item.id} className="flex items-center gap-4">
                     <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                      <img
+                      <Image
                         src={item.product.thumbnail}
                         alt={item.product.name}
+                        width={64}
+                        height={64}
                         className="h-full w-full object-cover"
+                        unoptimized
                       />
                     </div>
                     <div className="flex-1">

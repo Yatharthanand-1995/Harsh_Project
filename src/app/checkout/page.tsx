@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { AddressSelector } from '@/components/address-selector'
@@ -115,7 +116,7 @@ export default function CheckoutPage() {
       setSelectedAddressId(address.id)
       setShowAddressForm(false)
       toast.success('Address saved successfully')
-    } catch (error) {
+    } catch {
       toast.error('Failed to save address. Please try again.')
     }
   }
@@ -250,7 +251,7 @@ export default function CheckoutPage() {
         setTransactionIdError(error.error || 'Failed to submit payment details')
         toast.error(error.error || 'Failed to submit payment details. Please contact support.')
       }
-    } catch (error) {
+    } catch {
       setTransactionIdError('Network error. Please try again.')
       toast.error('Failed to submit payment details. Please contact support.')
     } finally {
@@ -507,10 +508,10 @@ export default function CheckoutPage() {
                           <h3 className="font-bold text-blue-900">How it works</h3>
                         </div>
                         <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
-                          <li>Click "Place Order" to create your order</li>
+                          <li>Click &quot;Place Order&quot; to create your order</li>
                           <li>Scan the QR code or use the UPI ID to pay</li>
                           <li>Enter your UPI Transaction ID to confirm</li>
-                          <li>We'll process your order once payment is verified</li>
+                          <li>We&apos;ll process your order once payment is verified</li>
                         </ol>
                       </div>
                     </div>
@@ -550,10 +551,13 @@ export default function CheckoutPage() {
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-3">
                       <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))]">
-                        <img
+                        <Image
                           src={item.product.thumbnail}
                           alt={item.product.name}
+                          width={64}
+                          height={64}
                           className="h-full w-full object-cover"
+                          unoptimized
                         />
                       </div>
                       <div className="flex-1">
@@ -665,10 +669,13 @@ export default function CheckoutPage() {
                         </div>
                       ) : qrCodeData ? (
                         <div className="relative">
-                          <img
+                          <Image
                             src={qrCodeData}
                             alt="UPI Payment QR Code"
+                            width={256}
+                            height={256}
                             className="w-64 h-64 rounded-lg"
+                            unoptimized
                           />
                           <p className="text-xs text-center text-gray-500 mt-2">
                             Scan with any UPI app

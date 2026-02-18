@@ -45,7 +45,7 @@ export default function AddressesPage() {
 
       const data = await response.json()
       setAddresses(data.addresses || [])
-    } catch (err) {
+    } catch {
       toast.error('Failed to load addresses')
     } finally {
       setIsLoading(false)
@@ -65,7 +65,7 @@ export default function AddressesPage() {
       toast.success('Address added successfully')
       setShowAddressForm(false)
       fetchAddresses()
-    } catch (error) {
+    } catch {
       toast.error('Failed to add address')
     }
   }
@@ -86,7 +86,7 @@ export default function AddressesPage() {
       setEditingAddress(null)
       setShowAddressForm(false)
       fetchAddresses()
-    } catch (error) {
+    } catch {
       toast.error('Failed to update address')
     }
   }
@@ -103,7 +103,7 @@ export default function AddressesPage() {
 
       toast.success('Address deleted successfully')
       fetchAddresses()
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete address')
     }
   }
@@ -120,7 +120,7 @@ export default function AddressesPage() {
 
       toast.success('Default address updated')
       fetchAddresses()
-    } catch (error) {
+    } catch {
       toast.error('Failed to update default address')
     }
   }

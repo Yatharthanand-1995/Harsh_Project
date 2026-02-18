@@ -1,4 +1,4 @@
-import { validateUpiId, validateUpiTransactionId } from './qr-code-utils'
+import { validateUpiId } from './qr-code-utils'
 
 /**
  * Payment Configuration

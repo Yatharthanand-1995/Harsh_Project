@@ -99,9 +99,6 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   // Calculate pagination
   const totalPages = Math.ceil(totalCount / perPage)
 
-  // Note: Removed availableFestivals as festivalType was removed from the schema
-  const availableFestivals: any[] = []
-
   const categoryTitle = {
     bakery: 'Artisan Bakery',
     hampers: 'Hamper & Gift Sets',

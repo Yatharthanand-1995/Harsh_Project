@@ -11,7 +11,7 @@ import { useSession } from 'next-auth/react'
 import { PRICING } from '@/lib/constants'
 
 export default function CartPage() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const {
     items,
     subtotal,

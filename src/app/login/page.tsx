@@ -36,7 +36,7 @@ function LoginForm() {
         router.push(callbackUrl)
         router.refresh()
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred. Please try again.')
     } finally {
       setIsLoading(false)
@@ -123,7 +123,7 @@ function LoginForm() {
               </form>
 
               <div className="mt-6 text-center text-sm text-gray-600">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link
                   href="/register"
                   className="font-semibold text-[hsl(var(--sienna))] hover:underline"

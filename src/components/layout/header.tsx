@@ -8,7 +8,7 @@ import { useCartStore } from '@/lib/stores/cart-store'
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const { itemCount, fetchCart } = useCartStore()
 
   useEffect(() => {

@@ -59,7 +59,7 @@ export default function ContactPage() {
           message: data.error || 'Failed to send message. Please try again.',
         })
       }
-    } catch (error) {
+    } catch {
       setSubmitStatus({
         type: 'error',
         message: 'An unexpected error occurred. Please try again later.',
@@ -78,7 +78,7 @@ export default function ContactPage() {
             Contact Us
           </h1>
           <p className="text-xl text-[hsl(var(--cream))]/90 max-w-2xl mx-auto">
-            We'd love to hear from you! Reach out for orders, inquiries, or custom requests.
+            We&apos;d love to hear from you! Reach out for orders, inquiries, or custom requests.
           </p>
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function ContactPage() {
                     Email Us
                   </h2>
                   <p className="text-gray-600 mb-4">
-                    Send us an email and we'll get back to you within 24 hours.
+                    Send us an email and we&apos;ll get back to you within 24 hours.
                   </p>
                   <a
                     href="mailto:harsh.homespun@gmail.com"
@@ -142,7 +142,7 @@ export default function ContactPage() {
               Send Us a Message
             </h2>
             <p className="text-gray-600 text-center mb-8">
-              Have a question or special request? Fill out the form below and we'll respond shortly.
+              Have a question or special request? Fill out the form below and we&apos;ll respond shortly.
             </p>
 
             {/* Status Messages */}

@@ -4,7 +4,7 @@ import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { User, Package, MapPin, Settings } from 'lucide-react'
+import { User, Package, MapPin } from 'lucide-react'
 
 export default function AccountLayout({
   children,
