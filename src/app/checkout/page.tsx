@@ -6,6 +6,7 @@ import { AddressSelector } from '@/components/address-selector'
 import { AddressForm } from '@/components/address-form'
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Calendar, Clock, CreditCard, Truck } from 'lucide-react'
 import { useCartStore } from '@/lib/stores/cart-store'
 import { PRICING } from '@/lib/constants'
@@ -20,6 +21,7 @@ function generateIdempotencyKey(): string {
 
 export default function CheckoutPage() {
   const router = useRouter()
+  const { status } = useSession()
   const { cart, fetchCart, isLoading } = useCartStore()
   const [step, setStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -43,12 +45,21 @@ export default function CheckoutPage() {
   const [upiLink, setUpiLink] = useState<string | null>(null)
   const [transactionIdError, setTransactionIdError] = useState<string | null>(null)
 
-  // Fetch cart on mount
+  // Redirect to login if not authenticated (client-side guard)
   useEffect(() => {
-    fetchCart().then(() => {
-      setHasFetched(true)
-    })
-  }, [fetchCart])
+    if (status === 'unauthenticated') {
+      router.push('/login?callbackUrl=/checkout')
+    }
+  }, [status, router])
+
+  // Fetch cart on mount (only when authenticated)
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchCart().then(() => {
+        setHasFetched(true)
+      })
+    }
+  }, [status, fetchCart])
 
   // Calculate totals using memoization
   const { subtotal, deliveryFee, tax, total } = useMemo(() => {
@@ -254,8 +265,8 @@ export default function CheckoutPage() {
     { id: 'midnight', label: 'Midnight (11 PM - 1 AM)', icon: '🌙', extra: '+₹100' },
   ]
 
-  // Show loading state while fetching cart
-  if (!hasFetched || isLoading) {
+  // Show loading state while session or cart is loading
+  if (status === 'loading' || status === 'unauthenticated' || !hasFetched || isLoading) {
     return (
       <>
         <Header />

@@ -23,7 +23,8 @@ export async function middleware(request: NextRequest) {
     path.startsWith('/api/orders') || // Orders API has its own auth check
     path === '/' ||
     path.startsWith('/products') ||
-    path.startsWith('/about')
+    path.startsWith('/about') ||
+    path.startsWith('/contact')
   ) {
     return NextResponse.next();
   }
