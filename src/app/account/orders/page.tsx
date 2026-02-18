@@ -1,11 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Package, Clock, CheckCircle, XCircle, Truck } from 'lucide-react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
+
+function SuccessToast() {
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      toast.success('Order confirmed! Thank you for your payment.')
+    }
+  }, [searchParams])
+  return null
+}
 
 interface Order {
   id: string
@@ -37,16 +47,9 @@ interface Order {
 export default function OrdersPage() {
   const { status } = useSession()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (searchParams.get('success') === 'true') {
-      toast.success('Order confirmed! Thank you for your payment.')
-    }
-  }, [searchParams])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -177,6 +180,9 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6">
+      <Suspense fallback={null}>
+        <SuccessToast />
+      </Suspense>
       <div className="rounded-2xl bg-white p-6 shadow-lg">
         <h2 className="mb-6 font-serif text-2xl font-bold text-[hsl(var(--sienna))]">
           Order History
