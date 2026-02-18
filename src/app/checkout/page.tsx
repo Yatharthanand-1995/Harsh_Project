@@ -11,7 +11,7 @@ import { useCartStore } from '@/lib/stores/cart-store'
 import { PRICING } from '@/lib/constants'
 import { toast } from 'sonner'
 import { fetchWithCsrf } from '@/lib/client-csrf'
-import { PAYMENT_CONFIG } from '@/lib/payment-config'
+import { PAYMENT_CONFIG, validateUpiTransactionId } from '@/lib/payment-config'
 
 // Generate a unique idempotency key for this checkout session
 function generateIdempotencyKey(): string {
@@ -37,6 +37,11 @@ export default function CheckoutPage() {
   const [orderCreated, setOrderCreated] = useState<any>(null)
   const [showPaymentDetails, setShowPaymentDetails] = useState(false)
   const [hasFetched, setHasFetched] = useState(false)
+  const [qrCodeData, setQrCodeData] = useState<string | null>(null)
+  const [qrCodeLoading, setQrCodeLoading] = useState(false)
+  const [qrCodeError, setQrCodeError] = useState<string | null>(null)
+  const [upiLink, setUpiLink] = useState<string | null>(null)
+  const [transactionIdError, setTransactionIdError] = useState<string | null>(null)
 
   // Fetch cart on mount
   useEffect(() => {
@@ -104,6 +109,36 @@ export default function CheckoutPage() {
     }
   }
 
+  const fetchQrCode = async (orderId: string, orderTotal: number, orderNumber: string) => {
+    setQrCodeLoading(true)
+    setQrCodeError(null)
+
+    try {
+      const response = await fetchWithCsrf('/api/qrcode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          amount: orderTotal,
+          orderNumber,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate QR code')
+      }
+
+      const data = await response.json()
+      setQrCodeData(data.qrCodeDataUrl)
+      setUpiLink(data.upiLink)
+    } catch (error) {
+      console.error('QR code generation error:', error)
+      setQrCodeError('Failed to generate QR code. You can still pay using the UPI ID below.')
+    } finally {
+      setQrCodeLoading(false)
+    }
+  }
+
   const handlePayment = async () => {
     if (!selectedAddressId) {
       toast.error('Please select a delivery address')
@@ -139,6 +174,10 @@ export default function CheckoutPage() {
       // Store order and show payment details
       setOrderCreated(order)
       setShowPaymentDetails(true)
+
+      // Fetch QR code for the order
+      await fetchQrCode(order.id, order.total, order.orderNumber)
+
       toast.success('Order created! Please complete the payment.')
     } catch (error: any) {
       toast.error(error.message || 'Failed to create order. Please try again.')
@@ -147,13 +186,37 @@ export default function CheckoutPage() {
     }
   }
 
+  const handleTransactionIdChange = (value: string) => {
+    setFormData({ ...formData, upiTransactionId: value })
+
+    // Clear error when user starts typing
+    setTransactionIdError(null)
+
+    // Validate on change if not empty
+    if (value.trim() && !validateUpiTransactionId(value)) {
+      setTransactionIdError('Transaction ID must be 12-16 alphanumeric characters')
+    }
+  }
+
   const handlePaymentConfirmation = async () => {
-    if (!formData.upiTransactionId.trim()) {
+    const transactionId = formData.upiTransactionId.trim()
+
+    if (!transactionId) {
+      setTransactionIdError('Please enter the UPI Transaction ID')
       toast.error('Please enter the UPI Transaction ID')
       return
     }
 
+    // Validate transaction ID format
+    if (!validateUpiTransactionId(transactionId)) {
+      setTransactionIdError('Invalid transaction ID format. Must be 12-16 alphanumeric characters.')
+      toast.error('Invalid transaction ID format')
+      return
+    }
+
     setIsProcessing(true)
+    setTransactionIdError(null)
+
     try {
       // Submit transaction ID to verify payment
       const verifyResponse = await fetchWithCsrf('/api/orders/verify', {
@@ -161,18 +224,23 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId: orderCreated.id,
-          upiTransactionId: formData.upiTransactionId,
+          upiTransactionId: transactionId,
         }),
       })
 
       if (verifyResponse.ok) {
-        toast.success('Payment details submitted! Your order is being processed.')
-        router.push(`/orders?success=true`)
+        toast.success('Payment confirmed! Your order is being prepared.')
+        // Clear sensitive data
+        setFormData({ ...formData, upiTransactionId: '' })
+        setShowPaymentDetails(false)
+        router.push(`/account/orders?success=true`)
       } else {
         const error = await verifyResponse.json()
+        setTransactionIdError(error.error || 'Failed to submit payment details')
         toast.error(error.error || 'Failed to submit payment details. Please contact support.')
       }
     } catch (error) {
+      setTransactionIdError('Network error. Please try again.')
       toast.error('Failed to submit payment details. Please contact support.')
     } finally {
       setIsProcessing(false)
@@ -562,39 +630,72 @@ export default function CheckoutPage() {
 
                 {/* QR Code */}
                 {PAYMENT_CONFIG.SHOW_QR_CODE && (
-                  <div className="mb-6 flex justify-center">
+                  <div className="mb-6 flex flex-col items-center">
                     <div className="rounded-xl border-2 border-gray-300 p-4 bg-white">
-                      <div className="w-48 h-48 bg-gray-100 flex items-center justify-center rounded-lg">
-                        <div className="text-center text-gray-500 p-4">
-                          <p className="text-sm mb-2">📱 QR Code</p>
-                          <p className="text-xs">
-                            Add your QR code image to<br/>
-                            <code className="bg-gray-200 px-1 rounded text-[10px]">public/upi-qr.png</code>
+                      {qrCodeLoading ? (
+                        <div className="w-64 h-64 bg-gray-100 flex items-center justify-center rounded-lg">
+                          <div className="text-center text-gray-500">
+                            <div className="animate-spin text-4xl mb-2">⏳</div>
+                            <p className="text-sm">Generating QR code...</p>
+                          </div>
+                        </div>
+                      ) : qrCodeError ? (
+                        <div className="w-64 h-64 bg-red-50 flex items-center justify-center rounded-lg p-4">
+                          <div className="text-center">
+                            <p className="text-sm text-red-600 mb-3">{qrCodeError}</p>
+                            <button
+                              type="button"
+                              onClick={() => fetchQrCode(orderCreated.id, orderCreated.total, orderCreated.orderNumber)}
+                              className="text-xs text-blue-600 hover:text-blue-800 underline"
+                            >
+                              Retry
+                            </button>
+                          </div>
+                        </div>
+                      ) : qrCodeData ? (
+                        <div className="relative">
+                          <img
+                            src={qrCodeData}
+                            alt="UPI Payment QR Code"
+                            className="w-64 h-64 rounded-lg"
+                          />
+                          <p className="text-xs text-center text-gray-500 mt-2">
+                            Scan with any UPI app
                           </p>
                         </div>
-                      </div>
+                      ) : null}
                     </div>
+
+                    {/* Mobile: Open in UPI App Button */}
+                    {upiLink && !qrCodeLoading && !qrCodeError && (
+                      <a
+                        href={upiLink}
+                        className="mt-4 inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-700 md:hidden"
+                      >
+                        📱 Open in UPI App
+                      </a>
+                    )}
                   </div>
                 )}
 
                 {/* UPI ID */}
                 <div className="mb-6">
                   <p className="text-sm text-gray-600 text-center mb-2">
-                    {PAYMENT_CONFIG.SHOW_QR_CODE ? 'Or pay using UPI ID' : 'Pay using UPI ID'}
+                    {PAYMENT_CONFIG.SHOW_QR_CODE && !qrCodeError ? 'Or pay using UPI ID' : 'Pay using UPI ID'}
                   </p>
                   <div className="rounded-lg bg-gray-50 p-4 text-center">
-                    <p className="font-mono font-bold text-lg text-[hsl(var(--sienna))]">
+                    <p className="font-mono font-bold text-lg text-[hsl(var(--sienna))] break-all">
                       {PAYMENT_CONFIG.UPI_ID}
                     </p>
                     <button
                       type="button"
                       onClick={() => {
                         navigator.clipboard.writeText(PAYMENT_CONFIG.UPI_ID)
-                        toast.success('UPI ID copied!')
+                        toast.success('UPI ID copied to clipboard!')
                       }}
-                      className="mt-2 text-xs text-blue-600 hover:text-blue-800"
+                      className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-semibold"
                     >
-                      Click to copy
+                      📋 Click to copy
                     </button>
                   </div>
                 </div>
@@ -617,29 +718,41 @@ export default function CheckoutPage() {
                   <input
                     type="text"
                     value={formData.upiTransactionId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, upiTransactionId: e.target.value })
-                    }
-                    placeholder="Enter 12-digit transaction ID"
-                    className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 focus:border-[hsl(var(--sienna))] focus:outline-none"
+                    onChange={(e) => handleTransactionIdChange(e.target.value)}
+                    placeholder="Enter 12-16 character transaction ID"
+                    className={`w-full rounded-lg border-2 px-4 py-3 focus:outline-none uppercase ${
+                      transactionIdError
+                        ? 'border-red-500 focus:border-red-600'
+                        : 'border-gray-300 focus:border-[hsl(var(--sienna))]'
+                    }`}
                     required
+                    maxLength={16}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    You can find this in your payment app after completing the transaction
-                  </p>
+                  {transactionIdError ? (
+                    <p className="text-xs text-red-600 mt-1 font-semibold">
+                      ⚠️ {transactionIdError}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-500 mt-1">
+                      You can find this in your payment app after completing the transaction
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className={`flex gap-4 ${PAYMENT_CONFIG.ALLOW_PAY_LATER ? '' : 'justify-center'}`}>
+              <div className={`flex gap-4 ${PAYMENT_CONFIG.ALLOW_PAY_LATER ? 'flex-col sm:flex-row' : 'justify-center'}`}>
                 {PAYMENT_CONFIG.ALLOW_PAY_LATER && (
                   <button
                     type="button"
                     onClick={() => {
                       setShowPaymentDetails(false)
-                      router.push('/orders')
+                      setFormData({ ...formData, upiTransactionId: '' })
+                      setTransactionIdError(null)
+                      router.push('/account/orders')
                     }}
-                    className="flex-1 rounded-full border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition-all hover:bg-gray-50"
+                    className="flex-1 rounded-full border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={isProcessing}
                   >
                     Pay Later
                   </button>
@@ -647,17 +760,24 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={handlePaymentConfirmation}
-                  disabled={isProcessing || !formData.upiTransactionId.trim()}
+                  disabled={isProcessing || !formData.upiTransactionId.trim() || !!transactionIdError}
                   className={`${PAYMENT_CONFIG.ALLOW_PAY_LATER ? 'flex-1' : 'w-full'} rounded-full bg-[hsl(var(--saffron))] px-6 py-3 font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0`}
                 >
-                  {isProcessing ? 'Confirming...' : 'Confirm Payment'}
+                  {isProcessing ? (
+                    <>
+                      <span className="inline-block animate-spin mr-2">⏳</span>
+                      Confirming...
+                    </>
+                  ) : (
+                    'Confirm Payment'
+                  )}
                 </button>
               </div>
 
-              <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-4">
-                <p className="text-sm text-yellow-800">
-                  <strong>Note:</strong> Your order will be processed once we verify your payment.
-                  You can also submit the transaction ID later from your orders page.
+              <div className="rounded-lg bg-green-50 border border-green-200 p-4">
+                <p className="text-sm text-green-800">
+                  <strong>Note:</strong> Your order will be confirmed instantly once you submit the
+                  UPI Transaction ID. You can also submit it later from your orders page.
                 </p>
               </div>
             </div>
