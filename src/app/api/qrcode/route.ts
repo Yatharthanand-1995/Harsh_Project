@@ -136,15 +136,14 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return badRequestResponse(
-        'Invalid request data',
-        error.errors.map((e) => `${e.path.join('.')}: ${e.message}`)
-      )
+      const firstError = error.issues[0]
+      return badRequestResponse(firstError?.message || 'Invalid request data')
     }
 
-    logger.error('Error generating QR code', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
+    logger.error(
+      { error: error instanceof Error ? error.message : 'Unknown error' },
+      'Error generating QR code'
+    )
 
     return errorResponse('Failed to generate payment QR code')
   }

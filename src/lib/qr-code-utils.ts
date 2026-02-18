@@ -68,16 +68,23 @@ export async function generateUpiQrCode(
     const upiLink = formatUpiLink(upiId, amount, note)
 
     // Generate QR code with enhanced options for better scanning
-    const qrCodeDataUrl = await QRCode.toDataURL(upiLink, {
-      errorCorrectionLevel: 'H', // High error correction
-      type: 'image/png',
-      quality: 0.95,
-      margin: 2,
-      width: 300,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF',
-      },
+    const qrCodeDataUrl = await new Promise<string>((resolve, reject) => {
+      QRCode.toDataURL(
+        upiLink,
+        {
+          errorCorrectionLevel: 'H',
+          margin: 2,
+          width: 300,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF',
+          },
+        },
+        (err, url) => {
+          if (err) reject(err)
+          else resolve(url)
+        }
+      )
     })
 
     return qrCodeDataUrl

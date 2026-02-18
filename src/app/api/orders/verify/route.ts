@@ -110,12 +110,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingOrder) {
-      logger.error('Duplicate UPI transaction ID detected', {
-        orderId: order.id,
-        existingOrderId: existingOrder.id,
-        transactionId: formattedTransactionId,
-        userId: session.user.id,
-      });
+      logger.error(
+        {
+          orderId: order.id,
+          existingOrderId: existingOrder.id,
+          transactionId: formattedTransactionId,
+          userId: session.user.id,
+        },
+        'Duplicate UPI transaction ID detected'
+      );
       return badRequestResponse(
         'This transaction ID has already been used for another order. Please verify your transaction ID or contact support.'
       );
@@ -181,22 +184,22 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const firstError = error.errors[0];
+      const firstError = error.issues[0];
       logger.warn('Payment verification validation failed', {
-        validationErrors: error.errors,
-        userId: session?.user?.id,
+        validationErrors: error.issues,
       });
       return badRequestResponse(
-        firstError.message || 'Invalid payment verification data',
-        error.errors.map((e) => `${e.path.join('.')}: ${e.message}`)
+        firstError?.message || 'Invalid payment verification data'
       );
     }
 
-    logger.error('Error submitting payment details', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      userId: session?.user?.id,
-    });
+    logger.error(
+      {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+      'Error submitting payment details'
+    );
 
     return errorResponse('Failed to submit payment details. Please try again or contact support.');
   }
