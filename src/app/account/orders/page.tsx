@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Package, Clock, CheckCircle, XCircle, Truck } from 'lucide-react'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 
 interface Order {
   id: string
   orderNumber: string
   status: string
   paymentStatus: string
+  paymentId?: string | null
   total: number
   createdAt: string
   items: Array<{
@@ -35,9 +37,16 @@ interface Order {
 export default function OrdersPage() {
   const { status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      toast.success('Order confirmed! Thank you for your payment.')
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -98,6 +107,35 @@ export default function OrdersPage() {
     }
   }
 
+  const getPaymentStatusBadge = (paymentStatus: string) => {
+    switch (paymentStatus.toUpperCase()) {
+      case 'PAID':
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-800">
+            ✓ Payment Confirmed
+          </span>
+        )
+      case 'PENDING':
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-sm font-semibold text-yellow-800">
+            ⏳ Payment Pending
+          </span>
+        )
+      case 'FAILED':
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-sm font-semibold text-red-800">
+            ✗ Payment Failed
+          </span>
+        )
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm font-semibold text-gray-800">
+            {paymentStatus}
+          </span>
+        )
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="rounded-2xl bg-white p-16 text-center shadow-lg">
@@ -151,25 +189,19 @@ export default function OrdersPage() {
               className="rounded-xl border-2 border-gray-200 p-6 transition-all hover:border-[hsl(var(--sienna))] hover:shadow-md"
             >
               {/* Order Header */}
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-4 border-b pb-4">
-                <div>
-                  <div className="mb-1 flex items-center gap-2">
-                    <Package className="h-5 w-5 text-[hsl(var(--sienna))]" />
-                    <span className="font-bold text-gray-800">
-                      Order #{order.orderNumber}
-                    </span>
+              <div className="mb-4 border-b pb-4">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <div className="mb-1 flex items-center gap-2">
+                      <Package className="h-5 w-5 text-[hsl(var(--sienna))]" />
+                      <span className="font-bold text-gray-800">
+                        Order #{order.orderNumber}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Placed on {format(new Date(order.createdAt), 'MMM dd, yyyy')}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-600">
-                    Placed on {format(new Date(order.createdAt), 'MMM dd, yyyy')}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold ${getStatusColor(order.status)}`}
-                  >
-                    {getStatusIcon(order.status)}
-                    {order.status}
-                  </span>
                   <div className="text-right">
                     <p className="text-sm text-gray-600">Total</p>
                     <p className="font-serif text-xl font-bold text-[hsl(var(--sienna))]">
@@ -177,6 +209,29 @@ export default function OrdersPage() {
                     </p>
                   </div>
                 </div>
+
+                {/* Status Badges */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold ${getStatusColor(order.status)}`}
+                  >
+                    {getStatusIcon(order.status)}
+                    {order.status}
+                  </span>
+                  {getPaymentStatusBadge(order.paymentStatus)}
+                </div>
+
+                {/* Transaction ID Display */}
+                {order.paymentId && (
+                  <div className="mt-3 rounded-lg bg-blue-50 p-3">
+                    <p className="text-xs font-semibold text-blue-900 mb-1">
+                      UPI Transaction ID:
+                    </p>
+                    <p className="font-mono text-sm text-blue-800 break-all">
+                      {order.paymentId}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Order Items */}

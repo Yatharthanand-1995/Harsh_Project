@@ -9,11 +9,19 @@ import {
   badRequestResponse,
   successResponse,
 } from '@/lib/api-response';
+import { validateUpiTransactionId, formatTransactionId } from '@/lib/qr-code-utils';
 
 // Validation schema for UPI payment verification
 const verifyPaymentSchema = z.object({
   orderId: z.string().min(1, 'Order ID is required'),
-  upiTransactionId: z.string().min(12, 'Valid UPI Transaction ID is required').max(50),
+  upiTransactionId: z
+    .string()
+    .min(12, 'Transaction ID must be at least 12 characters')
+    .max(16, 'Transaction ID must be at most 16 characters')
+    .refine(
+      (val) => validateUpiTransactionId(val),
+      'Invalid transaction ID format. Must be 12-16 alphanumeric characters'
+    ),
 });
 
 /**
@@ -30,53 +38,98 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json();
-    const { orderId, upiTransactionId } = verifyPaymentSchema.parse(body);
+    const validatedData = verifyPaymentSchema.parse(body);
+
+    // Format transaction ID (trim, uppercase)
+    const formattedTransactionId = formatTransactionId(validatedData.upiTransactionId);
 
     // Find the order - orderId can be either the order ID or order number
     const order = await prisma.order.findFirst({
       where: {
         OR: [
-          { id: orderId },
-          { orderNumber: orderId },
+          { id: validatedData.orderId },
+          { orderNumber: validatedData.orderId },
         ],
         userId: session.user.id,
+      },
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        paymentStatus: true,
+        paymentId: true,
+        total: true,
+        userId: true,
       },
     });
 
     if (!order) {
-      return badRequestResponse('Order not found');
+      logger.warn('Order not found for payment verification', {
+        orderId: validatedData.orderId,
+        userId: session.user.id,
+      });
+      return badRequestResponse('Order not found or does not belong to you');
     }
 
     // Check if order is already paid
     if (order.paymentStatus === 'PAID') {
-      return badRequestResponse('Order is already paid');
+      logger.info('Attempted to verify already paid order', {
+        orderId: order.id,
+        userId: session.user.id,
+      });
+      return badRequestResponse('This order has already been verified and paid');
     }
 
-    // Check for duplicate UPI transaction ID
+    // Check if transaction ID has already been submitted for this order
+    if (order.paymentId && order.paymentId === formattedTransactionId) {
+      logger.info('Transaction ID already submitted for this order', {
+        orderId: order.id,
+        userId: session.user.id,
+      });
+      return successResponse({
+        success: true,
+        message: 'Transaction ID already submitted. Awaiting admin verification.',
+        order: {
+          id: order.id,
+          orderNumber: order.orderNumber,
+          paymentStatus: order.paymentStatus,
+        },
+      });
+    }
+
+    // Check for duplicate UPI transaction ID across ALL orders
     const existingOrder = await prisma.order.findFirst({
       where: {
-        paymentId: upiTransactionId,
+        paymentId: formattedTransactionId,
         id: { not: order.id },
+      },
+      select: {
+        id: true,
+        orderNumber: true,
       },
     });
 
     if (existingOrder) {
-      logger.error({
+      logger.error('Duplicate UPI transaction ID detected', {
         orderId: order.id,
-        upiTransactionId,
-        userId: session.user.id
-      }, 'Duplicate UPI transaction ID detected');
-      return badRequestResponse('This transaction ID has already been used for another order');
+        existingOrderId: existingOrder.id,
+        transactionId: formattedTransactionId,
+        userId: session.user.id,
+      });
+      return badRequestResponse(
+        'This transaction ID has already been used for another order. Please verify your transaction ID or contact support.'
+      );
     }
 
     // Update order in a transaction
     const updatedOrder = await prisma.$transaction(async (tx) => {
-      // Update order with UPI transaction ID
+      // Update order with UPI transaction ID and confirm immediately
       const updated = await tx.order.update({
         where: { id: order.id },
         data: {
-          paymentId: upiTransactionId,
-          paymentStatus: 'PENDING', // Will be verified by admin
+          paymentId: formattedTransactionId,
+          paymentStatus: 'PAID',
+          status: 'CONFIRMED',
           paidAt: new Date(),
         },
         include: {
@@ -102,10 +155,12 @@ export async function POST(request: NextRequest) {
       return updated;
     });
 
-    logger.info('UPI payment details submitted', {
+    logger.info('UPI payment confirmed successfully', {
       orderId: updatedOrder.id,
-      upiTransactionId,
+      orderNumber: updatedOrder.orderNumber,
+      transactionId: formattedTransactionId,
       userId: session.user.id,
+      amount: updatedOrder.total,
     });
 
     // TODO: Send order confirmation email
@@ -113,7 +168,7 @@ export async function POST(request: NextRequest) {
 
     return successResponse({
       success: true,
-      message: 'Payment details submitted successfully. Your order will be processed once verified.',
+      message: 'Payment confirmed! Your order is now being prepared.',
       order: {
         id: updatedOrder.id,
         orderNumber: updatedOrder.orderNumber,
@@ -126,10 +181,23 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return errorResponse(error, 'Invalid payment verification data');
+      const firstError = error.errors[0];
+      logger.warn('Payment verification validation failed', {
+        validationErrors: error.errors,
+        userId: session?.user?.id,
+      });
+      return badRequestResponse(
+        firstError.message || 'Invalid payment verification data',
+        error.errors.map((e) => `${e.path.join('.')}: ${e.message}`)
+      );
     }
 
-    logger.error({ error }, 'Error submitting payment details');
-    return errorResponse(error, 'Failed to submit payment details');
+    logger.error('Error submitting payment details', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      userId: session?.user?.id,
+    });
+
+    return errorResponse('Failed to submit payment details. Please try again or contact support.');
   }
 }
