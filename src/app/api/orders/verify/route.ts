@@ -71,13 +71,29 @@ export async function POST(request: NextRequest) {
       return badRequestResponse('Order not found or does not belong to you');
     }
 
-    // Check if order is already paid
+    // Check if order payment is already confirmed or awaiting verification
     if (order.paymentStatus === 'PAID') {
       logger.info('Attempted to verify already paid order', {
         orderId: order.id,
         userId: session.user.id,
       });
       return badRequestResponse('This order has already been verified and paid');
+    }
+
+    if (order.paymentStatus === 'VERIFICATION_PENDING') {
+      logger.info('Order already awaiting admin verification', {
+        orderId: order.id,
+        userId: session.user.id,
+      });
+      return successResponse({
+        success: true,
+        message: 'Your transaction ID has already been submitted and is awaiting verification.',
+        order: {
+          id: order.id,
+          orderNumber: order.orderNumber,
+          paymentStatus: order.paymentStatus,
+        },
+      });
     }
 
     // Check if transaction ID has already been submitted for this order
@@ -124,41 +140,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update order in a transaction
-    const updatedOrder = await prisma.$transaction(async (tx) => {
-      // Update order with UPI transaction ID and confirm immediately
-      const updated = await tx.order.update({
-        where: { id: order.id },
-        data: {
-          paymentId: formattedTransactionId,
-          paymentStatus: 'PAID',
-          status: 'CONFIRMED',
-          paidAt: new Date(),
-        },
-        include: {
-          items: {
-            include: {
-              product: {
-                select: {
-                  name: true,
-                  thumbnail: true,
-                },
-              },
-            },
-          },
-          deliveryAddress: true,
-        },
-      });
-
-      // Clear user's cart after payment submission
-      await tx.cartItem.deleteMany({
-        where: { userId: session.user.id },
-      });
-
-      return updated;
+    // Update order — mark as awaiting admin verification (do NOT confirm yet)
+    const updatedOrder = await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        paymentId: formattedTransactionId,
+        paymentStatus: 'VERIFICATION_PENDING',
+      },
+      select: {
+        id: true,
+        orderNumber: true,
+        total: true,
+        status: true,
+        paymentStatus: true,
+      },
     });
 
-    logger.info('UPI payment confirmed successfully', {
+    logger.info('UPI transaction ID submitted, awaiting admin verification', {
       orderId: updatedOrder.id,
       orderNumber: updatedOrder.orderNumber,
       transactionId: formattedTransactionId,
@@ -166,20 +164,15 @@ export async function POST(request: NextRequest) {
       amount: updatedOrder.total,
     });
 
-    // TODO: Send order confirmation email
-    // await sendOrderConfirmationEmail(updatedOrder);
-
     return successResponse({
       success: true,
-      message: 'Payment confirmed! Your order is now being prepared.',
+      message: 'Transaction ID submitted! Our team will verify your payment and confirm your order shortly.',
       order: {
         id: updatedOrder.id,
         orderNumber: updatedOrder.orderNumber,
         total: updatedOrder.total,
         status: updatedOrder.status,
         paymentStatus: updatedOrder.paymentStatus,
-        items: updatedOrder.items,
-        address: updatedOrder.deliveryAddress,
       },
     });
   } catch (error) {

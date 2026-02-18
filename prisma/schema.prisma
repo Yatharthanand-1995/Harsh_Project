@@ -247,6 +247,7 @@ enum OrderStatus {
 
 enum PaymentStatus {
   PENDING
+  VERIFICATION_PENDING
   PAID
   FAILED
   REFUNDED

@@ -12,7 +12,7 @@ function SuccessToast() {
   const searchParams = useSearchParams()
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
-      toast.success('Order confirmed! Thank you for your payment.')
+      toast.success('Transaction ID submitted! Your payment is being verified.')
     }
   }, [searchParams])
   return null
@@ -119,6 +119,12 @@ export default function OrdersPage() {
             ✓ Payment Confirmed
           </span>
         )
+      case 'VERIFICATION_PENDING':
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-800">
+            🔍 Verifying Payment
+          </span>
+        )
       case 'PENDING':
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-sm font-semibold text-yellow-800">
@@ -128,7 +134,7 @@ export default function OrdersPage() {
       case 'FAILED':
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-sm font-semibold text-red-800">
-            ✗ Payment Failed
+            ✗ Payment Rejected — Please resubmit
           </span>
         )
       default:

@@ -241,7 +241,7 @@ export default function CheckoutPage() {
       })
 
       if (verifyResponse.ok) {
-        toast.success('Payment confirmed! Your order is being prepared.')
+        toast.success('Transaction ID submitted! We\'ll verify your payment shortly.')
         // Clear sensitive data
         setFormData({ ...formData, upiTransactionId: '' })
         setShowPaymentDetails(false)
@@ -792,10 +792,10 @@ export default function CheckoutPage() {
                 </button>
               </div>
 
-              <div className="rounded-lg bg-green-50 border border-green-200 p-4">
-                <p className="text-sm text-green-800">
-                  <strong>Note:</strong> Your order will be confirmed instantly once you submit the
-                  UPI Transaction ID. You can also submit it later from your orders page.
+              <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> Once you submit the Transaction ID, our team will verify your
+                  payment and confirm your order. You can track the status in your orders page.
                 </p>
               </div>
             </div>
