@@ -22,7 +22,7 @@ function generateIdempotencyKey(): string {
 export default function CheckoutPage() {
   const router = useRouter()
   const { status } = useSession()
-  const { cart, fetchCart, isLoading } = useCartStore()
+  const { items, fetchCart, isLoading } = useCartStore()
   const [step, setStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
   const [idempotencyKey] = useState(() => generateIdempotencyKey())
@@ -63,7 +63,7 @@ export default function CheckoutPage() {
 
   // Calculate totals using memoization
   const { subtotal, deliveryFee, tax, total } = useMemo(() => {
-    const sub = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+    const sub = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
     const delivery = sub >= PRICING.FREE_DELIVERY_THRESHOLD ? 0 : PRICING.DELIVERY_FEE
     const taxAmount = Math.round(sub * PRICING.GST_RATE)
     const totalAmount = sub + delivery + taxAmount
@@ -74,14 +74,14 @@ export default function CheckoutPage() {
       tax: taxAmount,
       total: totalAmount,
     }
-  }, [cart])
+  }, [items])
 
   // Redirect if cart is empty (only after initial fetch)
   useEffect(() => {
-    if (hasFetched && cart.length === 0) {
+    if (hasFetched && items.length === 0) {
       router.push('/cart')
     }
-  }, [cart, hasFetched, router])
+  }, [items, hasFetched, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -282,7 +282,7 @@ export default function CheckoutPage() {
   }
 
   // Show empty cart message if no items (only after fetch)
-  if (cart.length === 0) {
+  if (items.length === 0) {
     return (
       <>
         <Header />
@@ -547,7 +547,7 @@ export default function CheckoutPage() {
                 </h3>
 
                 <div className="mb-6 space-y-4">
-                  {cart.map((item) => (
+                  {items.map((item) => (
                     <div key={item.id} className="flex gap-3">
                       <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-[hsl(var(--cream))] to-[hsl(var(--warm-beige))]">
                         <img
