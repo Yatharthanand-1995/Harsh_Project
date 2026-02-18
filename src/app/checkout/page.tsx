@@ -13,7 +13,7 @@ import { useCartStore } from '@/lib/stores/cart-store'
 import { PRICING } from '@/lib/constants'
 import { toast } from 'sonner'
 import { fetchWithCsrf } from '@/lib/client-csrf'
-import { PAYMENT_CONFIG, validateUpiTransactionId } from '@/lib/payment-config'
+import { PAYMENT_CONFIG } from '@/lib/payment-config'
 
 // Generate a unique idempotency key for this checkout session
 function generateIdempotencyKey(): string {
@@ -35,7 +35,6 @@ export default function CheckoutPage() {
     deliveryNotes: '',
     giftMessage: '',
     isGift: false,
-    upiTransactionId: '',
   })
   const [orderCreated, setOrderCreated] = useState<any>(null)
   const [showPaymentDetails, setShowPaymentDetails] = useState(false)
@@ -44,7 +43,6 @@ export default function CheckoutPage() {
   const [qrCodeLoading, setQrCodeLoading] = useState(false)
   const [qrCodeError, setQrCodeError] = useState<string | null>(null)
   const [upiLink, setUpiLink] = useState<string | null>(null)
-  const [transactionIdError, setTransactionIdError] = useState<string | null>(null)
 
   // Redirect to login if not authenticated (client-side guard)
   useEffect(() => {
@@ -198,62 +196,25 @@ export default function CheckoutPage() {
     }
   }
 
-  const handleTransactionIdChange = (value: string) => {
-    setFormData({ ...formData, upiTransactionId: value })
-
-    // Clear error when user starts typing
-    setTransactionIdError(null)
-
-    // Validate on change if not empty
-    if (value.trim() && !validateUpiTransactionId(value)) {
-      setTransactionIdError('Transaction ID must be 12-16 alphanumeric characters')
-    }
-  }
-
   const handlePaymentConfirmation = async () => {
-    const transactionId = formData.upiTransactionId.trim()
-
-    if (!transactionId) {
-      setTransactionIdError('Please enter the UPI Transaction ID')
-      toast.error('Please enter the UPI Transaction ID')
-      return
-    }
-
-    // Validate transaction ID format
-    if (!validateUpiTransactionId(transactionId)) {
-      setTransactionIdError('Invalid transaction ID format. Must be 12-16 alphanumeric characters.')
-      toast.error('Invalid transaction ID format')
-      return
-    }
-
     setIsProcessing(true)
-    setTransactionIdError(null)
-
     try {
-      // Submit transaction ID to verify payment
       const verifyResponse = await fetchWithCsrf('/api/orders/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId: orderCreated.id,
-          upiTransactionId: transactionId,
-        }),
+        body: JSON.stringify({ orderId: orderCreated.id }),
       })
 
       if (verifyResponse.ok) {
-        toast.success('Transaction ID submitted! We\'ll verify your payment shortly.')
-        // Clear sensitive data
-        setFormData({ ...formData, upiTransactionId: '' })
+        toast.success('Payment received! We\'ll confirm your order shortly.')
         setShowPaymentDetails(false)
-        router.push(`/account/orders?success=true`)
+        router.push('/account/orders?success=true')
       } else {
-        const error = await verifyResponse.json()
-        setTransactionIdError(error.error || 'Failed to submit payment details')
-        toast.error(error.error || 'Failed to submit payment details. Please contact support.')
+        const data = await verifyResponse.json()
+        toast.error(data.error || 'Failed to notify payment. Please contact support.')
       }
     } catch {
-      setTransactionIdError('Network error. Please try again.')
-      toast.error('Failed to submit payment details. Please contact support.')
+      toast.error('Network error. Please try again.')
     } finally {
       setIsProcessing(false)
     }
@@ -510,8 +471,8 @@ export default function CheckoutPage() {
                         <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
                           <li>Click &quot;Place Order&quot; to create your order</li>
                           <li>Scan the QR code or use the UPI ID to pay</li>
-                          <li>Enter your UPI Transaction ID to confirm</li>
-                          <li>We&apos;ll process your order once payment is verified</li>
+                          <li>Click &quot;I Have Made the Payment&quot; to notify us</li>
+                          <li>We&apos;ll confirm your order once we verify the payment</li>
                         </ol>
                       </div>
                     </div>
@@ -728,74 +689,42 @@ export default function CheckoutPage() {
                   </ol>
                 </div>
 
-                {/* Transaction ID Input */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    UPI Transaction ID / UTR Number *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.upiTransactionId}
-                    onChange={(e) => handleTransactionIdChange(e.target.value)}
-                    placeholder="Enter 12-16 character transaction ID"
-                    className={`w-full rounded-lg border-2 px-4 py-3 focus:outline-none uppercase ${
-                      transactionIdError
-                        ? 'border-red-500 focus:border-red-600'
-                        : 'border-gray-300 focus:border-[hsl(var(--sienna))]'
-                    }`}
-                    required
-                    maxLength={16}
-                  />
-                  {transactionIdError ? (
-                    <p className="text-xs text-red-600 mt-1 font-semibold">
-                      ⚠️ {transactionIdError}
-                    </p>
-                  ) : (
-                    <p className="text-xs text-gray-500 mt-1">
-                      You can find this in your payment app after completing the transaction
-                    </p>
-                  )}
-                </div>
               </div>
 
               {/* Action Buttons */}
-              <div className={`flex gap-4 ${PAYMENT_CONFIG.ALLOW_PAY_LATER ? 'flex-col sm:flex-row' : 'justify-center'}`}>
-                {PAYMENT_CONFIG.ALLOW_PAY_LATER && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowPaymentDetails(false)
-                      setFormData({ ...formData, upiTransactionId: '' })
-                      setTransactionIdError(null)
-                      router.push('/account/orders')
-                    }}
-                    className="flex-1 rounded-full border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={isProcessing}
-                  >
-                    Pay Later
-                  </button>
-                )}
+              <div className="flex flex-col gap-3">
                 <button
                   type="button"
                   onClick={handlePaymentConfirmation}
-                  disabled={isProcessing || !formData.upiTransactionId.trim() || !!transactionIdError}
-                  className={`${PAYMENT_CONFIG.ALLOW_PAY_LATER ? 'flex-1' : 'w-full'} rounded-full bg-[hsl(var(--saffron))] px-6 py-3 font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0`}
+                  disabled={isProcessing}
+                  className="w-full rounded-full bg-green-600 px-6 py-4 font-bold text-white text-lg shadow-lg transition-all hover:-translate-y-1 hover:bg-green-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   {isProcessing ? (
-                    <>
-                      <span className="inline-block animate-spin mr-2">⏳</span>
-                      Confirming...
-                    </>
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="inline-block animate-spin">⏳</span>
+                      Notifying...
+                    </span>
                   ) : (
-                    'Confirm Payment'
+                    '✅ I Have Made the Payment'
                   )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPaymentDetails(false)
+                    router.push('/account/orders')
+                  }}
+                  disabled={isProcessing}
+                  className="w-full rounded-full border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-600 transition-all hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Pay Later
                 </button>
               </div>
 
-              <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
-                <p className="text-sm text-blue-800">
-                  <strong>Note:</strong> Once you submit the Transaction ID, our team will verify your
-                  payment and confirm your order. You can track the status in your orders page.
+              <div className="rounded-lg bg-green-50 border border-green-200 p-4">
+                <p className="text-sm text-green-800">
+                  <strong>Note:</strong> Once you click &quot;I Have Made the Payment&quot;, we receive
+                  an email and will confirm your order promptly. Track the status in your orders page.
                 </p>
               </div>
             </div>
