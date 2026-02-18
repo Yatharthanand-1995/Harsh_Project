@@ -43,8 +43,8 @@ export async function sendPaymentVerificationEmail(order: OrderEmailData) {
   const approveToken = generateOrderToken(order.orderId, 'approve')
   const rejectToken = generateOrderToken(order.orderId, 'reject')
 
-  const approveUrl = `${appUrl}/api/admin/orders/${order.orderId}/confirm?token=${approveToken}`
-  const rejectUrl = `${appUrl}/api/admin/orders/${order.orderId}/reject?token=${rejectToken}`
+  const approveUrl = `${appUrl}/api/orders/${order.orderId}/confirm?token=${approveToken}`
+  const rejectUrl = `${appUrl}/api/orders/${order.orderId}/reject?token=${rejectToken}`
 
   const itemsHtml = order.items
     .map(
