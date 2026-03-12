@@ -21,6 +21,8 @@ export function ProductActions({ productId, productName, stock }: ProductActions
   const { status } = useSession()
   const router = useRouter()
 
+  const maxQuantity = Math.min(stock, 10)
+
   const decreaseQuantity = () => {
     if (quantity > 1) {
       setQuantity(quantity - 1)
@@ -28,7 +30,7 @@ export function ProductActions({ productId, productName, stock }: ProductActions
   }
 
   const increaseQuantity = () => {
-    if (quantity < stock) {
+    if (quantity < maxQuantity) {
       setQuantity(quantity + 1)
     }
   }
@@ -105,15 +107,17 @@ export function ProductActions({ productId, productName, stock }: ProductActions
             <span className="min-w-[3rem] text-center font-bold">{quantity}</span>
             <button
               onClick={increaseQuantity}
-              disabled={quantity >= stock}
+              disabled={quantity >= maxQuantity}
               className="p-3 text-gray-600 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Increase quantity"
             >
               <Plus className="h-5 w-5" />
             </button>
           </div>
-          {quantity >= stock && (
-            <span className="text-sm text-red-600">Max quantity reached</span>
+          {quantity >= maxQuantity && (
+            <span className="text-sm text-red-600">
+              {stock <= 10 ? 'Max stock reached' : 'Max 10 per order'}
+            </span>
           )}
         </div>
       </div>
